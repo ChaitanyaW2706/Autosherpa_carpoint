@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>AutoSherpa Ops · History</title>
+  <link rel="stylesheet" href="css/index.css" />
+  <link rel="stylesheet" href="css/history.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="app">
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    <header class="mobile-header">
+      <button class="menu-toggle" id="menuToggle">☰</button>
+      <div class="mobile-brand">AutoSherpa</div>
+      <div style="width: 24px;"></div> <!-- Spacer -->
+    </header>
+
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="logo">
+          <div class="logo-icon">⚡</div>
+          <div class="logo-text">AutoSherpa<span>Car Point</span></div>
+        </div>
+      </div>
+      <nav class="nav">
+        <a class="nav-item" href="index.html">
+          <div class="nav-icon">🏠</div>
+          <div class="nav-content"><strong>Dashboard</strong><small>Overview</small></div>
+        </a>
+        <a class="nav-item" href="sales.html">
+          <div class="nav-icon">🚗</div>
+          <div class="nav-content"><strong>New Car</strong><small>Inventory</small></div>
+        </a>
+        <a class="nav-item" href="usedcar.html">
+          <div class="nav-icon">🚙</div>
+          <div class="nav-content"><strong>Used Car</strong><small>Pre-owned</small></div>
+        </a>
+        <a class="nav-item" href="service.html">
+          <div class="nav-icon">🔧</div>
+          <div class="nav-content"><strong>Service</strong><small>Work Orders</small></div>
+        </a>
+        <a class="nav-item" href="insurance.html">
+          <div class="nav-icon">🛡️</div>
+          <div class="nav-content"><strong>Insurance</strong><small>Policies & Renewals</small></div>
+        </a>
+        <a class="nav-item" href="refinancing.html">
+          <div class="nav-icon">💼</div>
+          <div class="nav-content"><strong>Refinancing</strong><small>Loan Options</small></div>
+        </a>
+        <a class="nav-item active" href="history.html">
+          <div class="nav-icon">🕘</div>
+          <div class="nav-content"><strong>History</strong><small>User Chat Logs</small></div>
+        </a>
+        <a href="aboutus.html" class="nav-item">
+          <div class="nav-icon">ℹ️</div>
+          <div class="nav-content"><strong>About Us</strong><small>Dealership Info</small></div>
+        </a>
+        <a href="locations.html" class="nav-item">
+          <div class="nav-icon">📍</div>
+          <div class="nav-content"><strong>Contact & Locations</strong><small>Store Details</small></div>
+        </a>
+      </nav>
+      <div class="sidebar-footer">
+        <a href="login.html" class="nav-item logout-item">
+          <div class="nav-icon">🚪</div>
+          <div class="nav-content"><strong>Logout</strong><small>Sign out</small></div>
+        </a>
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="main">
+
+      <div class="header">
+        <div class="header-content">
+          <h1>Chat <span class="header-highlight">History</span></h1>
+          <p>Track who interacted with the bot and what module they explored.</p>
+        </div>
+      </div>
+
+
+
+      <!-- Filters Card -->
+      <div class="card">
+        <div class="history-filters">
+
+          <div class="filters-top-row">
+            <div class="module-tabs">
+              <button class="tab-btn active" data-module="" onclick="setTabActive(this)">All</button>
+              <button class="tab-btn" data-module="sales"     onclick="setTabActive(this)">🚗 Sales</button>
+              <button class="tab-btn" data-module="insurance" onclick="setTabActive(this)">🛡️ Insurance</button>
+              <button class="tab-btn" data-module="service"   onclick="setTabActive(this)">🔧 Service</button>
+              <button class="tab-btn" data-module="used_cars" onclick="setTabActive(this)">🚙 Used Cars</button>
+              <button class="tab-btn" data-module="refinancing" onclick="setTabActive(this)">💼 Refinancing</button>
+              <button class="tab-btn" data-module="general"   onclick="setTabActive(this)">💡 General</button>
+            </div>
+            <button class="block-mgr-btn" onclick="openBlockModal()">
+              🚫 Manage Blocked Users
+            </button>
+          </div>
+
+          <div class="filter-row">
+            <input type="text" id="searchInput" placeholder="Search by phone number..." />
+            <select id="statusFilter">
+              <option value="">All Status</option>
+              <option value="active">🟢 Active</option>
+              <option value="closed">⚫ Closed</option>
+            </select>
+            <input type="date" id="dateFrom" />
+            <input type="date" id="dateTo" />
+            <button class="primary" onclick="applyFilters()">🔍 Filter</button>
+            <button class="secondary" onclick="resetFilters()">Reset</button>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Table Card -->
+      <div class="card">
+        <div class="card-top-row">
+          <h3>Interaction Logs</h3>
+          <span class="result-count" id="resultCount"></span>
+        </div>
+        <div class="table-wrapper">
+          <table id="historyTable">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Phone</th>
+                <th>Module</th>
+                <th>Last Message</th>
+                <th>Messages</th>
+                <th>Status</th>
+                <th>Date</th>
+                <th>Time</th>
+                <th>Duration</th>
+                <th>View</th>
+              </tr>
+            </thead>
+            <tbody id="historyTbody">
+              <tr><td colspan="10" class="empty-state">Loading sessions…</td></tr>
+            </tbody>
+          </table>
+        </div>
+        
+        <!-- Pagination -->
+        <div class="pagination" id="historyPagination"></div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- Chat Detail Modal -->
+  <div class="modal" id="chatModal">
+    <div class="modal-content chat-modal">
+
+      <div class="modal-header">
+        <div>
+          <div class="modal-title" id="modalTitle">Chat Session</div>
+          <div class="modal-subtitle" id="modalSubtitle"></div>
+        </div>
+        <button class="modal-close" onclick="closeModal()">✕</button>
+      </div>
+
+      <div class="chat-meta" id="chatMeta"></div>
+
+      <!-- In-modal filters -->
+      <div class="chat-filter-bar">
+        <select id="chatSenderFilter">
+          <option value="">All Messages</option>
+          <option value="user">👤 User Only</option>
+          <option value="bot">🤖 Bot Only</option>
+        </select>
+        <input type="text" id="chatKeyword" placeholder="🔍 Search in messages…" />
+        <button class="primary-sm" onclick="applyChatFilter()">Filter</button>
+        <button class="secondary-sm" onclick="resetChatFilter()">Reset</button>
+      </div>
+
+      <div class="chat-messages" id="chatMessages">
+        <div class="empty-state">Loading messages…</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Block Manager Modal -->
+  <div class="modal" id="blockModal">
+    <div class="modal-content block-modal">
+
+      <div class="modal-header">
+        <div>
+          <div class="modal-title">🚫 Manage Blocked Users</div>
+          <div class="modal-subtitle">Unique users from chat history — block or unblock access</div>
+        </div>
+        <button class="modal-close" onclick="closeBlockModal()">✕</button>
+      </div>
+
+      <div class="block-modal-tabs">
+        <button class="block-tab active" id="tabAllNumbers" onclick="switchBlockTab('all')">
+          📋 All Users <span class="block-tab-count" id="allNumbersCount"></span>
+        </button>
+        <button class="block-tab" id="tabBlocked" onclick="switchBlockTab('blocked')">
+          🚫 Currently Blocked <span class="block-tab-count" id="blockedCount"></span>
+        </button>
+      </div>
+
+      <div class="block-search-row">
+        <input type="text" id="blockSearchInput" placeholder="🔍 Search phone number..." oninput="filterBlockList()" />
+      </div>
+
+      <div class="block-list" id="blockList">
+        <div class="empty-state">Loading…</div>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="js/config.js?v=1.2"></script>
+  <script src="js/history.js"></script>
+<script src="js/mobile.js"></script>
+</body>
+</html>

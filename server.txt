@@ -1,0 +1,27 @@
+uvicorn main:app --reload --host 127.0.0.1 --port 8990
+python -m http.server 5500
+http://127.0.0.1:5500/sales.html
+http://127.0.0.1:5500/index.html
+
+http://localhost:5500/login.html
+
+autosherpa_ops/
+│
+├── backend/
+│   ├── main.py
+│   ├── db.py
+│   ├── models.py
+│   ├── routes/
+│   │     ├── sales.py
+│   │     ├── insurance.py
+│   │     └── history.py
+│   └── schemas.py
+│
+├── frontend/
+│   ├── index.html
+│   ├── sales.html
+│   ├── insurance.html
+│   ├── css/style.css
+│   └── js/app.js
+│
+└── README.md

@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>AutoSherpa Ops · Contact & Locations</title>
+  <link rel="stylesheet" href="css/index.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/locations.css">
+</head>
+<body>
+  <div class="app">
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    <header class="mobile-header">
+      <button class="menu-toggle" id="menuToggle">☰</button>
+      <div class="mobile-brand">AutoSherpa</div>
+      <div style="width: 24px;"></div> <!-- Spacer -->
+    </header>
+
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="logo">
+          <div class="logo-icon">⚡</div>
+          <div class="logo-text">
+            AutoSherpa
+            <span>Car Point</span>
+          </div>
+        </div>
+      </div>
+      <nav class="nav">
+        <a href="index.html" class="nav-item">
+          <div class="nav-icon">🏠</div>
+          <div class="nav-content"><strong>Dashboard</strong><small>Overview</small></div>
+        </a>
+        <a href="sales.html" class="nav-item">
+          <div class="nav-icon">🚗</div>
+          <div class="nav-content"><strong>New Car</strong><small>Inventory</small></div>
+        </a>
+        <a href="usedcar.html" class="nav-item">
+          <div class="nav-icon">🚙</div>
+          <div class="nav-content"><strong>Used Car</strong><small>Pre-owned</small></div>
+        </a>
+        <a href="service.html" class="nav-item">
+          <div class="nav-icon">🔧</div>
+          <div class="nav-content"><strong>Service</strong><small>Work Orders</small></div>
+        </a>
+        <a href="insurance.html" class="nav-item">
+          <div class="nav-icon">🛡️</div>
+          <div class="nav-content"><strong>Insurance</strong><small>Policies & Renewals</small></div>
+        </a>
+        <a href="refinancing.html" class="nav-item">
+          <div class="nav-icon">💼</div>
+          <div class="nav-content"><strong>Refinancing</strong><small>Loan Options</small></div>
+        </a>
+        <a href="history.html" class="nav-item">
+          <div class="nav-icon">🕘</div>
+          <div class="nav-content"><strong>History</strong><small>User Chat Logs</small></div>
+        </a>
+        <a href="aboutus.html" class="nav-item">
+          <div class="nav-icon">ℹ️</div>
+          <div class="nav-content"><strong>About Us</strong><small>Dealership Info</small></div>
+        </a>
+        <a href="locations.html" class="nav-item active">
+          <div class="nav-icon">📍</div>
+          <div class="nav-content"><strong>Contact & Locations</strong><small>Store Details</small></div>
+        </a>
+      </nav>
+      <div class="sidebar-footer">
+        <a href="login.html" class="nav-item logout-item">
+          <div class="nav-icon">🚪</div>
+          <div class="nav-content"><strong>Logout</strong><small>Sign out</small></div>
+        </a>
+      </div>
+    </aside>
+    <main class="main">
+      <div class="header">
+        <div class="header-content">
+          <h1>Contact & <span class="header-highlight">Locations</span></h1>
+          <p>Manage dealer showroom addresses and contact information.</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+          <div>
+            <h3 style="margin:0;">All Locations</h3>
+            <p class="small-text" style="margin:8px 0 0;">All locations shown by the chatbot</p>
+          </div>
+          <button class="btn-add" onclick="openAddLocationModal()">+ Add Location</button>
+        </div>
+      </div>
+
+      <div id="locationsContainer" style="margin-top: 20px;">
+        <div style="text-align: center; color: #64748b; padding: 40px;">Loading locations...</div>
+      </div>
+
+      <!-- Add/Edit Location Modal -->
+      <div id="locationModal" class="modal">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3 id="modalTitle" style="margin: 0;">Add Location</h3>
+            <button class="modal-close" onclick="closeLocationModal()">✕</button>
+          </div>
+          <input type="hidden" id="locationId">
+          <div class="form-grid">
+            <input id="locationName" placeholder="Location Name (e.g., Main Showroom)">
+            <input id="address" placeholder="Address">
+            <input id="phone" placeholder="Phone Number">
+            <input id="email" placeholder="Email Address">
+            <textarea id="hours" placeholder="Hours (e.g., Mon-Sat: 9 AM - 8 PM | Sun: 10 AM - 6 PM)" style="min-height: 80px;"></textarea>
+            <input id="latitude" placeholder="Latitude (optional)" type="number" step="any">
+            <input id="longitude" placeholder="Longitude (optional)" type="number" step="any">
+            <input id="mapUrl" placeholder="Google Maps URL (optional)">
+            <select id="status" style="width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 12px;">
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
+          </div>
+          <div class="modal-actions">
+            <button class="btn-secondary" onclick="closeLocationModal()">Cancel</button>
+            <button class="btn-primary" onclick="saveLocation()">Save Location</button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/config.js?v=1.2"></script>
+  <script src="js/locations.js"></script>
+<script src="js/mobile.js"></script>
+</body>
+</html>

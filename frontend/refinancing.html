@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>AutoSherpa Ops · Refinancing</title>
+  <link rel="stylesheet" href="css/index.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/refinancing.css">
+</head>
+<body>
+  <div class="app">
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    <header class="mobile-header">
+      <button class="menu-toggle" id="menuToggle">☰</button>
+      <div class="mobile-brand">AutoSherpa</div>
+      <div style="width: 24px;"></div> <!-- Spacer -->
+    </header>
+
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="logo">
+          <div class="logo-icon">⚡</div>
+          <div class="logo-text">
+            AutoSherpa
+            <span>Car Point</span>
+          </div>
+        </div>
+      </div>
+      <nav class="nav">
+        <a href="index.html" class="nav-item">
+          <div class="nav-icon">🏠</div>
+          <div class="nav-content"><strong>Dashboard</strong><small>Overview</small></div>
+        </a>
+        <a href="sales.html" class="nav-item">
+          <div class="nav-icon">🚗</div>
+          <div class="nav-content"><strong>New Car</strong><small>Inventory</small></div>
+        </a>
+        <a href="usedcar.html" class="nav-item">
+          <div class="nav-icon">🚙</div>
+          <div class="nav-content"><strong>Used Car</strong><small>Pre-owned</small></div>
+        </a>
+        <a href="service.html" class="nav-item">
+          <div class="nav-icon">🔧</div>
+          <div class="nav-content"><strong>Service</strong><small>Work Orders</small></div>
+        </a>
+        <a href="insurance.html" class="nav-item">
+          <div class="nav-icon">🛡️</div>
+          <div class="nav-content"><strong>Insurance</strong><small>Policies & Renewals</small></div>
+        </a>
+        <a href="refinancing.html" class="nav-item active">
+          <div class="nav-icon">💼</div>
+          <div class="nav-content"><strong>Refinancing</strong><small>Loan Options</small></div>
+        </a>
+        <a href="history.html" class="nav-item">
+          <div class="nav-icon">🕘</div>
+          <div class="nav-content"><strong>History</strong><small>User Chat Logs</small></div>
+        </a>
+        <a href="aboutus.html" class="nav-item">
+          <div class="nav-icon">ℹ️</div>
+          <div class="nav-content"><strong>About Us</strong><small>Dealership Info</small></div>
+        </a>
+        <a href="locations.html" class="nav-item">
+          <div class="nav-icon">📍</div>
+          <div class="nav-content"><strong>Contact & Locations</strong><small>Store Details</small></div>
+        </a>
+      </nav>
+      <div class="sidebar-footer">
+        <a href="login.html" class="nav-item logout-item">
+          <div class="nav-icon">🚪</div>
+          <div class="nav-content"><strong>Logout</strong><small>Sign out</small></div>
+        </a>
+      </div>
+    </aside>
+    <main class="main">
+      <div class="header">
+        <div class="header-content">
+          <h1>Refinancing <span class="header-highlight">Center</span></h1>
+          <p>Manage refinancing leads and track loan approval workflow.</p>
+        </div>
+      </div>
+
+      <div id="dashboardView">
+        <!-- Stats Cards (Clickable Filters) -->
+        <div class="refinancing-stats">
+          <div class="stat-card active" onclick="filterByStat('all')">
+            <h3>📊 Total Enquiry</h3>
+            <div class="count" id="totalCount">0</div>
+            <div class="label">All Enquiries</div>
+          </div>
+          <div class="stat-card" onclick="filterByStat('loan_against_car')">
+            <h3>🚗 Loan Against Car</h3>
+            <div class="count" id="loanAgainstCarCount">0</div>
+            <div class="label">Loan Against Car</div>
+          </div>
+          <div class="stat-card" onclick="filterByStat('loan_transfer')">
+            <h3>💳 Loan Transfer</h3>
+            <div class="count" id="loanTransferCount">0</div>
+            <div class="label">Loan Transfer</div>
+          </div>
+          <div class="stat-card" onclick="filterByStat('eligibility')">
+            <h3>✅ Eligibility</h3>
+            <div class="count" id="eligibilityCount">0</div>
+            <div class="label">Eligibility</div>
+          </div>
+          <div class="stat-card" onclick="filterByStat('refinancing')">
+            <h3>💰 EMI/Refinancing</h3>
+            <div class="count" id="refinancingCount">0</div>
+            <div class="label">EMI / Refinancing</div>
+          </div>
+        </div>
+
+        <!-- Leads Table -->
+        <div class="leads-container">
+          <div class="leads-header">
+            <h3 id="leadsTitle">All Refinancing Leads</h3>
+            <button class="primary-button" onclick="openLeadModal()">+ Add Lead</button>
+          </div>
+          <div id="leadsContent">
+            <div class="empty-state">
+              <p>Loading leads...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Full-page Lead Form View -->
+      <div id="leadFormView" class="hidden">
+        <div class="form-page">
+          <div class="form-header">
+            <div class="form-header-left">
+              <button class="icon-back-button" onclick="closeLeadModal()">←</button>
+              <h2 id="modalTitle">Add Refinancing Lead</h2>
+            </div>
+            <div class="form-header-actions">
+              <button class="secondary-button" onclick="closeLeadModal()">Cancel</button>
+              <button class="primary-button" onclick="saveLead()">Save Lead</button>
+            </div>
+          </div>
+          
+          <div class="form-content-grid">
+            <input type="hidden" id="leadId" />
+            
+            <div class="form-section">
+              <h4>Customer Information</h4>
+              <div class="input-row">
+                <div class="input-group">
+                  <label for="customerName">Customer Name</label>
+                  <input id="customerName" placeholder="Enter customer name" />
+                </div>
+                <div class="input-group">
+                  <label for="phoneNumber">Contact Number</label>
+                  <input id="phoneNumber" placeholder="Enter mobile number" />
+                </div>
+                <div class="input-group">
+                  <label for="city">Location</label>
+                  <input id="city" placeholder="Enter city" />
+                </div>
+              </div>
+            </div>
+
+            <div class="form-section">
+              <h4>Loan Details</h4>
+              <div class="input-row">
+                <div class="input-group">
+                  <label for="intentType">Requirement Type</label>
+                  <select id="intentType">
+                    <option value="refinancing">Refinancing</option>
+                    <option value="loan_against_car">Loan Against Car</option>
+                    <option value="loan_transfer">Loan Transfer</option>
+                    <option value="eligibility">Eligibility Check</option>
+                  </select>
+                </div>
+                <div class="input-group">
+                  <label for="loanRequirement">Loan Requirement</label>
+                  <input id="loanRequirement" type="text" placeholder="e.g. ₹5–8 Lakh" />
+                </div>
+                <div class="input-group">
+                  <label for="remainingLoanAmt">Current Loan Balance</label>
+                  <input id="remainingLoanAmt" type="text" placeholder="e.g. ₹3 Lakh" />
+                </div>
+              </div>
+            </div>
+
+            <div class="form-section">
+              <h4>Vehicle Information</h4>
+              <div class="input-row">
+                <div class="input-group">
+                  <label for="carBrand">Car Brand</label>
+                  <input id="carBrand" placeholder="e.g. Maruti, Honda" />
+                </div>
+                <div class="input-group">
+                  <label for="carModel">Car Model</label>
+                  <input id="carModel" placeholder="e.g. Swift, City" />
+                </div>
+                <div class="input-group">
+                  <label for="yearOfManufacture">Year of Manufacture</label>
+                  <input id="yearOfManufacture" type="number" placeholder="YYYY" />
+                </div>
+              </div>
+            </div>
+
+            <div class="form-section">
+              <h4>Administrative</h4>
+              <div class="input-row">
+                <div class="input-group">
+                  <label for="contactPreference">Contact Preference</label>
+                  <input id="contactPreference" placeholder="Today / Tomorrow / Morning" />
+                </div>
+                <div class="input-group">
+                  <label for="status">Lead Status</label>
+                  <select id="status">
+                    <option value="new">New Lead</option>
+                    <option value="contacted">Contacted</option>
+                    <option value="approved">Approved</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/config.js?v=1.2"></script>
+  <script src="js/refinancing.js"></script>
+<script src="js/mobile.js"></script>
+</body>
+</html>

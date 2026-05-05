@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>AutoSherpa Ops · Modern Dashboard</title>
+  <link rel="stylesheet" href="css/index.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="app">
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    <header class="mobile-header">
+      <button class="menu-toggle" id="menuToggle">☰</button>
+      <div class="mobile-brand">AutoSherpa</div>
+      <div style="width: 24px;"></div> <!-- Spacer -->
+    </header>
+
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="logo">
+          <div class="logo-icon">A</div>
+          <div class="logo-text">
+            AutoSherpa
+            <span>Car Point</span>
+          </div>
+        </div>
+      </div>
+      
+      <nav class="nav">
+        <a href="index.html" class="nav-item active">
+          <div class="nav-icon">🏠</div>
+          <div class="nav-content">
+            <strong>Dashboard</strong>
+            <small>Overview</small>
+          </div>
+        </a>
+
+        <a href="sales.html" class="nav-item">
+          <div class="nav-icon">🚗</div>
+          <div class="nav-content">
+            <strong>New Car Inventory</strong>
+            <small>List & Upload</small>
+          </div>
+        </a>
+
+        <a href="usedcar.html" class="nav-item">
+          <div class="nav-icon">🚙</div>
+          <div class="nav-content">
+            <strong>Used Car Inventory</strong>
+            <small>Pre-owned</small>
+          </div>
+        </a>
+
+        <a href="service.html" class="nav-item">
+          <div class="nav-icon">🔧</div>
+          <div class="nav-content">
+            <strong>Service Data</strong>
+            <small>History & Reports</small>
+          </div>
+        </a>
+
+        <a href="insurance.html" class="nav-item">
+          <div class="nav-icon">🛡️</div>
+          <div class="nav-content">
+            <strong>Insurance Data</strong>
+            <small>Policies & Renewals</small>
+          </div>
+        </a>
+
+        <a href="refinancing.html" class="nav-item">
+          <div class="nav-icon">💼</div>
+          <div class="nav-content">
+            <strong>Refinancing</strong>
+            <small>Loan Options</small>
+          </div>
+        </a>
+
+        <a href="history.html" class="nav-item">
+          <div class="nav-icon">🕘</div>
+          <div class="nav-content">
+            <strong>History</strong>
+            <small>User Chat Logs</small>
+          </div>
+        </a>
+
+        <a href="aboutus.html" class="nav-item">
+          <div class="nav-icon">ℹ️</div>
+          <div class="nav-content">
+            <strong>About Us</strong>
+            <small>Dealership Info</small>
+          </div>
+        </a>
+
+        <a href="locations.html" class="nav-item">
+          <div class="nav-icon">📍</div>
+          <div class="nav-content">
+            <strong>Contact & Locations</strong>
+            <small>Store Details</small>
+          </div>
+        </a>
+      </nav>
+      <div class="sidebar-footer">
+        <a href="login.html" class="nav-item logout-item">
+          <div class="nav-icon">🚪</div>
+          <div class="nav-content">
+            <strong>Logout</strong>
+            <small>Sign out</small>
+          </div>
+        </a>
+      </div>
+    </aside>
+
+    <main class="main">
+      <!-- Main Dashboard Overview Container -->
+      <div id="dashboardOverview">
+        <div class="header">
+          <div class="header-flex">
+            <div class="header-content">
+              <h1>
+                Welcome back,
+                <span class="header-highlight">AutoSherpa</span>
+              </h1>
+              <p>Your dealership operations at a glance. Track performance, manage inventory, and drive growth.</p>
+              
+              <!-- Period Selector -->
+              <div class="period-selector">
+                <button onclick="changePeriod('today')" class="period-btn active" id="periodTodayBtn">
+                  📅 Today
+                </button>
+                <button onclick="changePeriod('yesterday')" class="period-btn" id="periodYesterdayBtn">
+                  📆 Yesterday
+                </button>
+                <button onclick="changePeriod('week')" class="period-btn" id="periodWeekBtn">
+                  📊 Last 7 Days
+                </button>
+                <button onclick="changePeriod('15days')" class="period-btn" id="period15DaysBtn">
+                  📈 Last 15 Days
+                </button>
+              </div>
+            </div>
+            <div class="header-right">
+              <button class="action-trigger-btn" onclick="showAppointmentsView()">
+                <span class="btn-icon">📅</span>
+                <span class="btn-text">Test Drives & Appointments</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="dashboard-top-card">
+          <div class="dash-grid">
+            <div class="dash-card">
+              <div class="dash-card-heading">🚗 Sales Enquiry</div>
+              <div class="dash-card-value" id="salesEnq">0</div>
+              <div class="dash-card-trend" id="salesTrend"></div>
+            </div>
+            <div class="dash-card">
+              <div class="dash-card-heading">🚙 Used Car Enquiry</div>
+              <div class="dash-card-value" id="usedEnq">0</div>
+              <div class="dash-card-trend" id="usedTrend"></div>
+            </div>
+            <div class="dash-card">
+              <div class="dash-card-heading">🔧 Service Enquiry</div>
+              <div class="dash-card-value" id="serviceEnq">0</div>
+              <div class="dash-card-trend" id="serviceTrend"></div>
+            </div>
+          </div>
+
+          <div class="dash-grid">
+            <div class="dash-card">
+              <div class="dash-card-heading">🛡️ Insurance Enquiry</div>
+              <div class="dash-card-value" id="insuranceEnq">0</div>
+              <div class="dash-card-trend" id="insuranceTrend"></div>
+            </div>
+            <div class="dash-card">
+              <div class="dash-card-heading">💼 Refinancing Enquiry</div>
+              <div class="dash-card-value" id="refinancingEnq">0</div>
+              <div class="dash-card-trend" id="refinancingTrend"></div>
+            </div>
+            <div class="dash-card">
+              <div class="dash-card-heading">ℹ️ About Us Enquiry</div>
+              <div class="dash-card-value" id="aboutUsEnq">0</div>
+              <div class="dash-card-trend" id="aboutUsTrend"></div>
+            </div>
+          </div>
+
+          <div class="dash-grid single-row">
+            <div class="dash-card large-card">
+              <div class="dash-card-heading">📍 Contact Enquiry</div>
+              <div class="dash-card-value" id="contactEnq">0</div>
+              <div class="dash-card-trend" id="contactTrend"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card trend-card">
+          <div class="trend-header">
+            <div>
+              <span class="eyebrow">Lead Trend</span>
+              <div class="lead-count" id="leadCount">0 leads</div>
+            </div>
+            <div class="trend-caption">Unique customers per day (last 15 days)</div>
+          </div>
+
+          <div class="trend-chart">
+            <div class="trend-axis-label">Last 15 days</div>
+            <div class="trend-bars" id="trendBars"></div>
+            <div class="trend-labels" id="trendLabels"></div>
+          </div>
+        </div>
+
+        <!-- Summary Stats Card -->
+        <div class="card summary-card">
+          <div class="summary-header">
+            <h3>📊 Summary Statistics</h3>
+            <span class="last-updated" id="lastUpdated">Last updated: --</span>
+          </div>
+          <div class="summary-grid">
+            <div class="summary-item">
+              <div class="summary-label">Total Sessions</div>
+              <div class="summary-value" id="totalSessions">--</div>
+            </div>
+            <div class="summary-item">
+              <div class="summary-label">Active Now</div>
+              <div class="summary-value" id="activeSessions">--</div>
+            </div>
+            <div class="summary-item">
+              <div class="summary-label">Unique Customers (Period)</div>
+              <div class="summary-value" id="uniqueCustomers">--</div>
+            </div>
+          </div>
+        </div>
+      </div> <!-- End dashboardOverview -->
+
+      <!-- Dedicated Appointments View -->
+      <div id="appointmentsView" class="full-view-container" style="display: none;">
+        <div class="view-header">
+          <div class="view-header-left">
+            <button class="back-btn" onclick="showDashboardOverview()">
+              <span class="back-icon">←</span> Back to Dashboard
+            </button>
+            <div class="view-title">
+              <h2>🗓️ Test Drives & Appointments</h2>
+              <p>Combined view of all incoming requests across modules</p>
+            </div>
+          </div>
+          <div class="view-actions">
+            <button class="refresh-btn-large" onclick="loadActionItems()">
+              <span class="refresh-icon">🔄</span> Refresh List
+            </button>
+          </div>
+        </div>
+
+        <div class="view-filters-bar">
+          <div class="filter-section">
+            <span class="filter-label">Time Period:</span>
+            <div class="view-period-selector">
+              <button onclick="changeModalPeriod('today')" class="mini-period-btn" id="modalPeriodToday">Today</button>
+              <button onclick="changeModalPeriod('yesterday')" class="mini-period-btn" id="modalPeriodYesterday">Yesterday</button>
+              <button onclick="changeModalPeriod('week')" class="mini-period-btn" id="modalPeriodWeek">7 Days</button>
+              <button onclick="changeModalPeriod('15days')" class="mini-period-btn active" id="modalPeriod15Days">15 Days</button>
+            </div>
+          </div>
+          <div class="filter-section">
+            <span class="filter-label">Filter by Module:</span>
+            <div class="view-module-tabs">
+              <button onclick="filterModalByModule('all')" class="tab-btn active" id="tabAll">All Items</button>
+              <button onclick="filterModalByModule('sales')" class="tab-btn" id="tabSales">New Cars</button>
+              <button onclick="filterModalByModule('used_cars')" class="tab-btn" id="tabUsed">Used Cars</button>
+              <button onclick="filterModalByModule('insurance')" class="tab-btn" id="tabInsurance">Insurance</button>
+              <button onclick="filterModalByModule('service')" class="tab-btn" id="tabService">Service</button>
+              <button onclick="filterModalByModule('refinancing')" class="tab-btn" id="tabRefinancing">Refinancing</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="view-table-container">
+          <div id="actionItemsContainer" class="action-items-list-view">
+            <div class="empty-state">Loading data...</div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+  
+  <script src="js/config.js?v=1.2"></script>
+  <script src="js/index.js"></script>
+<script src="js/mobile.js"></script>
+</body>
+</html>

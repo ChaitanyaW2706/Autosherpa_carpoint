@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>AutoSherpa Ops · Sales</title>
+
+  <link rel="stylesheet" href="css/index.css">
+  <link rel="stylesheet" href="css/sales.css">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet">
+</head>
+
+<body>
+  <div class="app">
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    <header class="mobile-header">
+      <button class="menu-toggle" id="menuToggle">☰</button>
+      <div class="mobile-brand">AutoSherpa</div>
+      <div style="width: 24px;"></div> <!-- Spacer -->
+    </header>
+
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="logo">
+          <div class="logo-icon">⚡</div>
+          <div class="logo-text">
+            AutoSherpa
+            <span>Car Point</span>
+          </div>
+        </div>
+      </div>
+
+      <nav class="nav">
+        <a href="index.html" class="nav-item">
+          <div class="nav-icon">🏠</div>
+          <div class="nav-content">
+            <strong>Dashboard</strong>
+            <small>Overview</small>
+          </div>
+        </a>
+
+        <a href="sales.html" class="nav-item active">
+          <div class="nav-icon">🚗</div>
+          <div class="nav-content">
+            <strong>New Car</strong>
+            <small>Inventory</small>
+          </div>
+        </a>
+
+        <a href="usedcar.html" class="nav-item">
+          <div class="nav-icon">🚙</div>
+          <div class="nav-content">
+            <strong>Used Car</strong>
+            <small>Pre-owned</small>
+          </div>
+        </a>
+
+        <a href="service.html" class="nav-item">
+          <div class="nav-icon">🔧</div>
+          <div class="nav-content">
+            <strong>Service</strong>
+            <small>Work Orders</small>
+          </div>
+        </a>
+
+        <a href="insurance.html" class="nav-item">
+          <div class="nav-icon">🛡️</div>
+          <div class="nav-content">
+            <strong>Insurance</strong>
+            <small>Policies & Renewals</small>
+          </div>
+        </a>
+
+        <a href="refinancing.html" class="nav-item">
+          <div class="nav-icon">💼</div>
+          <div class="nav-content">
+            <strong>Refinancing</strong>
+            <small>Loan Options</small>
+          </div>
+        </a>
+
+        <a href="history.html" class="nav-item">
+          <div class="nav-icon">🕘</div>
+          <div class="nav-content">
+            <strong>History</strong>
+            <small>User Chat Logs</small>
+          </div>
+        </a>
+
+        <a href="aboutus.html" class="nav-item">
+          <div class="nav-icon">ℹ️</div>
+          <div class="nav-content">
+            <strong>About Us</strong>
+            <small>Dealership Info</small>
+          </div>
+        </a>
+
+        <a href="locations.html" class="nav-item">
+          <div class="nav-icon">📍</div>
+          <div class="nav-content">
+            <strong>Contact & Locations</strong>
+            <small>Store Details</small>
+          </div>
+        </a>
+      </nav>
+      <div class="sidebar-footer">
+        <a href="login.html" class="nav-item logout-item">
+          <div class="nav-icon">🚪</div>
+          <div class="nav-content">
+            <strong>Logout</strong>
+            <small>Sign out</small>
+          </div>
+        </a>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main">
+
+      <!-- Page Header -->
+      <div class="header">
+        <div class="header-content">
+          <h1>Sales Management <span class="header-highlight">Dashboard</span></h1>
+          <p>Manage car inventory, variants, pricing, images and brochures in one place.</p>
+        </div>
+      </div>
+
+      <!-- Top Controls -->
+      <div class="card">
+        <div class="sales-top-grid">
+          <div class="sales-top-item">
+            <h3>📦 Inventory Management</h3>
+            <p class="small-text">Upload, manage, and track all car models</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════════════════════
+           UPLOAD FULL-PAGE OVERLAY
+           ══════════════════════════════════════════════════ -->
+      <div id="uploadDrawerOverlay" class="drawer-overlay">
+        <aside class="upload-drawer">
+
+          <!-- Full-width Header Bar -->
+          <div class="drawer-header">
+            <div class="drawer-header-left">
+              <div class="drawer-icon">⬆️</div>
+              <div>
+                <div class="drawer-title">Upload Car Inventory</div>
+                <div class="drawer-subtitle">Bulk import via Excel / CSV</div>
+              </div>
+            </div>
+            <button class="drawer-close-btn" onclick="toggleUploadInventory()">✕</button>
+          </div>
+
+          <!-- Full-page two-column body -->
+          <div class="drawer-body">
+
+            <!-- LEFT COLUMN: Template + Instructions -->
+            <div class="drawer-col">
+              <div class="drawer-step">
+                <div class="step-badge">Step 1</div>
+                <h4 class="step-title">📥 Download Template</h4>
+                <p class="step-desc">Use our standardized template to ensure all required fields are properly filled. Includes sample data and column headers.</p>
+
+                <div class="required-fields-pill">
+                  <span class="pill-label">⚠️ Required:</span>
+                  Brand, Model, Variant Type, Price Base, Price Top, Fuel, Trans, Mileage
+                </div>
+
+                  <button class="drawer-download-btn" onclick="downloadSalesTemplate()" style="margin-top: 10px;">
+                    <span>📄</span> Download Stock Template
+                  </button>
+              </div>
+
+              <div class="drawer-divider"><span>Instructions</span></div>
+
+              <div class="drawer-instructions">
+                <div class="instr-col">
+                  <div class="instr-item check">✔ Download the Excel template above</div>
+                  <div class="instr-item check">✔ Fill in your car details using sample data</div>
+                  <div class="instr-item check">✔ Ensure all required fields are completed</div>
+                  <div class="instr-item check">✔ Save the file as .csv format</div>
+                </div>
+                <div class="instr-col">
+                  <div class="instr-item warn">⚠ Brand and Model must exist in system</div>
+                  <div class="instr-item warn">⚠ Use consistent formatting for prices</div>
+                  <div class="instr-item warn">⚠ Numeric fields should contain only numbers</div>
+                  <div class="instr-item warn">⚠ Upload the completed file below</div>
+                </div>
+              </div>
+
+              <div class="drawer-alt-action">
+                <span>Prefer manual entry?</span>
+                <button class="drawer-link-btn" onclick="toggleUploadInventory(); toggleAddCarForm();">Add Single Entry →</button>
+              </div>
+            </div>
+
+            <!-- RIGHT COLUMN: Dropzone + Upload -->
+            <div class="drawer-col">
+              <div class="drawer-step" style="flex:1; display:flex; flex-direction:column; gap:18px;">
+                <div class="step-badge">Step 2</div>
+                <h4 class="step-title">⬆️ Upload Your File</h4>
+                <p class="step-desc">Select the filled Excel/CSV file to import car inventory data into the system.</p>
+
+                <div class="drawer-dropzone" onclick="document.getElementById('salesFileInput').click()"
+                  ondragover="event.preventDefault()" ondrop="handleSalesDrop(event)">
+                  <input type="file" id="salesFileInput" class="hidden" accept=".csv" onchange="handleSalesFileSelect(event)">
+                  <div class="dz-icon-wrap">📄</div>
+                  <div class="dz-main">Click to select file</div>
+                  <div class="dz-sub">or drag and drop your CSV / Excel here</div>
+                  <div class="dz-format-badge">.csv (Excel export)</div>
+
+                  <div id="salesFilePreview" class="file-ready-preview" style="display:none;">
+                    <div class="file-info">
+                      <span>📎</span>
+                      <span id="salesFileName">filename.csv</span>
+                    </div>
+                    <span class="file-ready-label">Ready to upload</span>
+                  </div>
+                </div>
+
+                <div class="drawer-upload-actions">
+                  <button class="drawer-cancel-btn" onclick="toggleUploadInventory()">Cancel</button>
+                  <button class="drawer-upload-btn" id="btnSalesUpload" onclick="uploadSalesFile()">
+                    <span>⬆️</span> Upload File
+                  </button>
+                </div>
+              </div>
+            </div>
+
+          </div><!-- /drawer-body -->
+        </aside>
+      </div>
+
+      <!-- Legacy upload section removed — replaced by #uploadDrawerOverlay above -->
+
+      <!-- Add New Car Form -->
+      <div class="card hidden" id="addCarForm">
+        <h3>➕ Add New Car</h3>
+        <div class="grid-form">
+          <input id="make" placeholder="Make (e.g. HYUNDAI)" required>
+          <input id="model" placeholder="Model (e.g. Alcazar)" required>
+          <input id="variant" placeholder="Variant (e.g. Prestige 7S)" required>
+          <input id="mileage" type="number" placeholder="Avg Mileage (kmpl)" min="0" required>
+          <input id="exPriceBase" type="number" placeholder="Ex-Showroom Price Base Model (₹)" min="0" required>
+          <input id="exPriceTop" type="number" placeholder="Ex-Showroom Price Top Model (₹)" min="0" required>
+          <select id="carType" required onchange="toggleCustomTypeInput('carType','newCarType')">
+            <option value="">Select Car Type</option>
+          </select>
+          <div id="newCarTypeRow" class="tag-group" style="display:none; grid-column: span 2; margin-top: 6px;">
+            <label>New Car Type</label>
+            <input id="newCarType" placeholder="Enter new type, e.g. SUV"
+              style="width:100%; padding:10px; border-radius:8px; border:1px solid #cbd5e1;" />
+          </div>
+          <textarea id="description" placeholder="Description (optional)" rows="2"
+            style="grid-column: span 2;"></textarea>
+
+          <!-- Colors -->
+          <div class="tag-group" style="grid-column: span 2;">
+            <label>Colors</label>
+            <div class="tag-input-container">
+              <input id="colorInput" placeholder="Add color (e.g. White)"
+                onkeypress="if(event.key==='Enter'){event.preventDefault(); addTag('color');}">
+              <button type="button" class="secondary btn-sm" onclick="addTag('color')">Add</button>
+            </div>
+            <div id="colorTags" class="tag-list"></div>
+          </div>
+
+          <!-- Fuel Types -->
+          <div class="tag-group" style="grid-column: span 2;">
+            <label>Fuel Types</label>
+            <div class="tag-input-container">
+              <input id="fuelInput" placeholder="Add fuel type (e.g. Petrol)"
+                onkeypress="if(event.key==='Enter'){event.preventDefault(); addTag('fuel');}">
+              <button type="button" class="secondary btn-sm" onclick="addTag('fuel')">Add</button>
+            </div>
+            <div id="fuelTags" class="tag-list"></div>
+          </div>
+
+          <!-- Transmission Types -->
+          <div class="tag-group" style="grid-column: span 2;">
+            <label>Transmission Types</label>
+            <div class="tag-input-container">
+              <input id="transmissionInput" placeholder="Add transmission (e.g. Manual)"
+                onkeypress="if(event.key==='Enter'){event.preventDefault(); addTag('transmission');}">
+              <button type="button" class="secondary btn-sm" onclick="addTag('transmission')">Add</button>
+            </div>
+            <div id="transmissionTags" class="tag-list"></div>
+          </div>
+
+          <div class="file-group">
+            <label>Car Images (optional, up to 5)</label>
+            <input type="file" id="carImages" accept="image/png,image/jpeg,image/webp" multiple
+              onchange="handleCarImagesSelect(event)">
+            <div id="carImagesList" style="margin-top: 8px; font-size: 0.9rem; color: #475569;"></div>
+            <div class="hint">Select up to 5 files. Use Ctrl / Shift to select multiple images.</div>
+          </div>
+
+          <div class="file-group">
+            <label>Brochure PDF (optional)</label>
+            <input type="file" id="brochurePdf" accept="application/pdf">
+            <div class="hint">Max 3MB</div>
+          </div>
+
+          <div style="grid-column: 1 / -1; display: flex; justify-content: flex-end; padding-top: 4px;">
+            <button type="button" class="primary btn-lg" onclick="addCar()">
+              Add Car to Inventory
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cars Browse Section -->
+      <div class="card">
+        <div class="cars-header">
+          <h3>View Cars</h3>
+          <div class="cars-top-actions">
+            <button class="action-btn upload-btn" onclick="toggleUploadInventory()">⬆ Upload</button>
+            <button class="action-btn add-vehicle-btn" onclick="toggleAddCarForm()">➕ Add vehicle</button>
+          </div>
+        </div>
+
+        <!-- Filter Bar -->
+        <div class="filter-bar">
+          <div class="filter-group">
+            <label>Search</label>
+            <input type="text" id="carSearch" placeholder="Search by model" oninput="filterCars()" />
+          </div>
+          <div class="filter-group">
+            <label>Brand</label>
+            <select id="brandFilter" onchange="filterCars()">
+              <option value="">All Brands</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label>Fuel Type</label>
+            <select id="fuelFilter" onchange="filterCars()">
+              <option value="">All Fuel Types</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label>Model</label>
+            <select id="modelFilter" onchange="filterCars()">
+              <option value="">All Model</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label>Vehicle Type</label>
+            <select id="typeFilter" onchange="filterCars()">
+              <option value="">All Types</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Filter Actions -->
+        <div class="filter-actions-row">
+          <div class="filter-btns">
+            <button class="filter-chip" onclick="filterCars()">⚙ Filter</button>
+            <button class="filter-chip secondary" onclick="resetCarFilters()">↺ Reset Filters</button>
+            <button class="filter-chip secondary" onclick="exportCSV()">⬇ Export CSV</button>
+          </div>
+          <span class="cars-count" id="carsCount"></span>
+        </div>
+
+        <!-- Loading State -->
+        <div id="carsLoading" class="loading-container hidden">
+          <div class="loading-spinner"></div>
+          <p>Loading cars...</p>
+        </div>
+
+        <!-- Cars Grid (4-column card layout) -->
+        <div id="carsGrid" class="cars-grid"></div>
+
+        <!-- Empty State -->
+        <div id="carsEmpty" class="empty-cars hidden">
+          <div class="empty-icon">🚗</div>
+          <h4>No Cars Found</h4>
+          <p>Click "Add vehicle" to start building your inventory.</p>
+        </div>
+      </div>
+
+      <!-- Variant Add/Edit Modal -->
+      <div id="variantModal" class="modal">
+        <div class="modal-content">
+          <div class="modal-header" id="modalTitle">Add / Edit Value</div>
+          <div class="form-group">
+            <label>Value</label>
+            <input id="variantInput" placeholder="Enter value..." autocomplete="off">
+          </div>
+          <div class="modal-actions">
+            <button class="secondary" onclick="closeModal()">Cancel</button>
+            <button class="primary" onclick="saveVariantModal()">Save</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- View Car Details Modal — Full Page Overlay -->
+      <div id="viewCarModal" class="drawer-overlay">
+        <aside class="upload-drawer">
+          <div class="drawer-header">
+            <div class="drawer-header-left">
+              <div class="drawer-icon">👁️</div>
+              <div>
+                <div class="drawer-title" id="viewModalTitle">Car Details</div>
+                <div class="drawer-subtitle" id="viewModalVariant">—</div>
+              </div>
+            </div>
+            <button class="drawer-close-btn" onclick="closeViewModal()">✕</button>
+          </div>
+
+          <div class="drawer-body">
+            <!-- Left Col: Images -->
+            <div class="drawer-col">
+              <div class="drawer-step">
+                <div class="step-badge">Visuals</div>
+                <h4 class="step-title">Car Views</h4>
+                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:12px; margin-top:10px;">
+                  <div>
+                    <strong style="display:block; margin-bottom:4px; color:#475569; font-size:0.85rem;">Back View</strong>
+                    <div id="viewBackViewImage" style="width:100%; height:160px; border-radius:12px; background:#f1f5f9; overflow:hidden;"></div>
+                  </div>
+                  <div>
+                    <strong style="display:block; margin-bottom:4px; color:#475569; font-size:0.85rem;">Right View</strong>
+                    <div id="viewRightViewImage" style="width:100%; height:160px; border-radius:12px; background:#f1f5f9; overflow:hidden;"></div>
+                  </div>
+                  <div>
+                    <strong style="display:block; margin-bottom:4px; color:#475569; font-size:0.85rem;">Front View</strong>
+                    <div id="viewFrontViewImage" style="width:100%; height:160px; border-radius:12px; background:#f1f5f9; overflow:hidden;"></div>
+                  </div>
+                  <div>
+                    <strong style="display:block; margin-bottom:4px; color:#475569; font-size:0.85rem;">Left View</strong>
+                    <div id="viewLeftViewImage" style="width:100%; height:160px; border-radius:12px; background:#f1f5f9; overflow:hidden;"></div>
+                  </div>
+                  <div style="grid-column: span 2;">
+                    <strong style="display:block; margin-bottom:4px; color:#475569; font-size:0.85rem;">Interior</strong>
+                    <div id="viewInteriorImage" style="width:100%; height:180px; border-radius:12px; background:#f1f5f9; overflow:hidden;"></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="drawer-step">
+                <div class="step-badge">Description</div>
+                <div class="view-description" style="margin:0; background:white; border:1px solid #e2e8f0; border-radius:12px; padding:15px;">
+                  <p id="viewModalDescription" style="margin:0; font-size:0.95rem; color:#475569;">No description available.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right Col: Technical Details -->
+            <div class="drawer-col">
+              <div class="drawer-step">
+                <div class="step-badge">Specifications</div>
+                <h4 class="step-title">Technical Details</h4>
+                <div class="view-details-grid" style="grid-template-columns:1fr; gap:0; margin:10px 0 0;">
+                  <div class="view-detail-row"><span class="view-detail-label">Brand</span><span id="viewModalMake" class="view-detail-value">—</span></div>
+                  <div class="view-detail-row"><span class="view-detail-label">Model</span><span id="viewModalModel" class="view-detail-value">—</span></div>
+                  <div class="view-detail-row"><span class="view-detail-label">Variant</span><span id="viewModalVariantLabel" class="view-detail-value">—</span></div>
+                  <div class="view-detail-row"><span class="view-detail-label">Mileage</span><span id="viewModalMileage" class="view-detail-value">—</span></div>
+                  <div class="view-detail-row"><span class="view-detail-label">Base Price</span><span id="viewModalPriceBase" class="view-detail-value">—</span></div>
+                  <div class="view-detail-row"><span class="view-detail-label">Top Price</span><span id="viewModalPriceTop" class="view-detail-value">—</span></div>
+                  <div class="view-detail-row"><span class="view-detail-label">Type</span><span id="viewModalType" class="view-detail-value">—</span></div>
+                  <div class="view-detail-row"><span class="view-detail-label">Fuel</span><span id="viewModalFuel" class="view-detail-value">—</span></div>
+                  <div class="view-detail-row"><span class="view-detail-label">Transmission</span><span id="viewModalTrans" class="view-detail-value">—</span></div>
+                  <div class="view-detail-row"><span class="view-detail-label">Colors</span><span id="viewModalColor" class="view-detail-value">—</span></div>
+                  <div class="view-detail-row"><span class="view-detail-label">Brochure</span><span id="viewModalBrochure" class="view-detail-value">—</span></div>
+                </div>
+              </div>
+
+              <div style="margin-top:auto; display:flex; justify-content:flex-end;">
+                <button class="drawer-cancel-btn" onclick="closeViewModal()">Close View</button>
+              </div>
+            </div>
+          </div>
+        </aside>
+      </div>
+      <!-- Edit Main Car Modal — Full Page Overlay -->
+      <div id="editCarModal" class="drawer-overlay">
+        <aside class="upload-drawer">
+
+          <!-- Header -->
+          <div class="drawer-header">
+            <div class="drawer-header-left">
+              <div class="drawer-icon">✏️</div>
+              <div>
+                <div class="drawer-title">Edit Car Details</div>
+                <div class="drawer-subtitle" id="editModalSub">—</div>
+              </div>
+            </div>
+            <button class="drawer-close-btn" onclick="closeEditModal()">✕</button>
+          </div>
+
+          <div class="drawer-body">
+            <input type="hidden" id="editCarId">
+
+            <!-- LEFT COLUMN: Media & Description -->
+            <div class="drawer-col">
+              <div class="drawer-step">
+                <div class="step-badge">Media</div>
+                <h4 class="step-title">Car Images & Brochure</h4>
+                <div class="edit-image-row" style="padding:0; background:transparent; border:none;">
+                  <div class="edit-image-preview" id="editImagePreview">
+                    <span class="edit-image-placeholder-icon">🚗</span>
+                  </div>
+                  <div class="edit-image-info">
+                    <div class="edit-section-label">Car Images</div>
+                    <div class="edit-image-hint">Upload new images to replace current ones.</div>
+                    <label class="edit-upload-btn">
+                      📷 Choose Images
+                      <input type="file" id="editCarImage" accept="image/*" multiple onchange="previewEditImage(this)"
+                        style="display:none">
+                    </label>
+                    <div class="hint">Max 5 — JPG/PNG</div>
+                  </div>
+                </div>
+
+                <div class="edit-field-group" style="border:none; padding:10px 0 0;">
+                  <div class="edit-section-label">Brochure PDF</div>
+                  <label class="edit-upload-btn secondary-upload">
+                    📄 Choose PDF
+                    <input type="file" id="editBrochurePdf" accept=".pdf" style="display:none">
+                  </label>
+                  <div class="hint">Max 3MB</div>
+                </div>
+              </div>
+
+              <div class="drawer-step">
+                <div class="step-badge">Notes</div>
+                <h4 class="step-title">Car Description</h4>
+                <textarea id="editDescription" class="edit-input edit-textarea" rows="4"
+                  placeholder="A short description of the car…"></textarea>
+              </div>
+
+              <div class="drawer-step">
+                <div class="step-badge">Options</div>
+                <h4 class="step-title">Colors & Features</h4>
+                <div class="edit-field-group" style="border:none; padding:0;">
+                  <label class="edit-label">Available Colors</label>
+                  <div class="edit-tags-wrapper" id="editColorTags">
+                    <div class="edit-tags-list" id="editColorList"></div>
+                    <div class="edit-tag-input-row">
+                      <input id="editColorInput" class="edit-tag-input" placeholder="Add color…"
+                        onkeydown="handleTagKey(event,'color')">
+                      <button class="edit-tag-add-btn" onclick="addEditTag('color')">+ Add</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- RIGHT COLUMN: Specifications -->
+            <div class="drawer-col">
+              <div class="drawer-step">
+                <div class="step-badge">Basics</div>
+                <h4 class="step-title">General Specifications</h4>
+                <div class="edit-fields-grid" style="padding:0;">
+                  <div class="edit-field-group">
+                    <label class="edit-label">Brand (Make)</label>
+                    <input id="editMake" class="edit-input" placeholder="e.g. HYUNDAI" required>
+                  </div>
+                  <div class="edit-field-group">
+                    <label class="edit-label">Model</label>
+                    <input id="editModel" class="edit-input" placeholder="e.g. Creta" required>
+                  </div>
+                  <div class="edit-field-group">
+                    <label class="edit-label">Variant</label>
+                    <input id="editVariant" class="edit-input" placeholder="e.g. Prestige" required>
+                  </div>
+                  <div class="edit-field-group">
+                    <label class="edit-label">Car Type</label>
+                    <select id="editCarType" class="edit-input" required
+                      onchange="toggleCustomTypeInput('editCarType','editNewCarType')">
+                      <option value="">Select Car Type</option>
+                    </select>
+                  </div>
+                  <div class="edit-field-group" id="editNewCarTypeRow" style="display:none; grid-column: span 2;">
+                    <label class="edit-label">New Car Type</label>
+                    <input id="editNewCarType" class="edit-input" placeholder="Enter new type">
+                  </div>
+                </div>
+              </div>
+
+              <div class="drawer-step">
+                <div class="step-badge">Performance</div>
+                <h4 class="step-title">Pricing & Efficiency</h4>
+                <div class="edit-fields-grid" style="padding:0;">
+                  <div class="edit-field-group">
+                    <label class="edit-label">Base Price (₹)</label>
+                    <input id="editExPriceBase" class="edit-input" type="number" min="0">
+                  </div>
+                  <div class="edit-field-group">
+                    <label class="edit-label">Top Price (₹)</label>
+                    <input id="editExPriceTop" class="edit-input" type="number" min="0">
+                  </div>
+                  <div class="edit-field-group">
+                    <label class="edit-label">Avg Mileage</label>
+                    <input id="editMileage" class="edit-input" type="number" min="0">
+                  </div>
+                </div>
+              </div>
+
+              <div class="drawer-step">
+                <div class="step-badge">Mechanical</div>
+                <h4 class="step-title">Engine & Gearbox</h4>
+                <div class="edit-fields-grid" style="padding:0;">
+                  <div class="edit-field-group">
+                    <label class="edit-label">Fuel Options</label>
+                    <div class="edit-tags-wrapper" id="editFuelTags">
+                      <div class="edit-tags-list" id="editFuelList"></div>
+                      <div class="edit-tag-input-row">
+                        <input id="editFuelInput" class="edit-tag-input" placeholder="Add fuel…"
+                          onkeydown="handleTagKey(event,'fuel')">
+                        <button class="edit-tag-add-btn" onclick="addEditTag('fuel')">+ Add</button>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="edit-field-group">
+                    <label class="edit-label">Transmission</label>
+                    <div class="edit-tags-wrapper" id="editTransTags">
+                      <div class="edit-tags-list" id="editTransList"></div>
+                      <div class="edit-tag-input-row">
+                        <input id="editTransInput" class="edit-tag-input" placeholder="Add transmission…"
+                          onkeydown="handleTagKey(event,'trans')">
+                        <button class="edit-tag-add-btn" onclick="addEditTag('trans')">+ Add</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="drawer-upload-actions" style="margin-top:auto;">
+                <button class="drawer-cancel-btn" onclick="closeEditModal()">Cancel</button>
+                <button class="drawer-upload-btn" onclick="saveEditCar()">💾 Save Changes</button>
+              </div>
+            </div>
+          </div>
+        </aside>
+      </div>
+
+    </main>
+  </div>
+
+  <script src="js/config.js?v=1.2"></script>
+  <script src="js/sales.js"></script>
+  <script>
+    // ── Upload Drawer ──────────────────────────────────────
+    function toggleUploadInventory() {
+      const overlay = document.getElementById('uploadDrawerOverlay');
+      const isOpen = overlay.classList.contains('drawer-open');
+      if (isOpen) {
+        overlay.classList.remove('drawer-open');
+        document.body.style.overflow = '';
+      } else {
+        overlay.classList.add('drawer-open');
+        document.body.style.overflow = 'hidden';
+      }
+    }
+    function handleOverlayClick(e) {
+      if (e.target === document.getElementById('uploadDrawerOverlay')) {
+        toggleUploadInventory();
+      }
+    }
+    // Keyboard close
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') {
+        const overlay = document.getElementById('uploadDrawerOverlay');
+        if (overlay && overlay.classList.contains('drawer-open')) toggleUploadInventory();
+      }
+    });
+  </script>
+<script src="js/mobile.js"></script>
+</body>
+
+</html>

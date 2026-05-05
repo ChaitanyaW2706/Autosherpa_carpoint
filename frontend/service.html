@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>AutoSherpa Ops · Service</title>
+  <link rel="stylesheet" href="css/index.css">
+  <link rel="stylesheet" href="css/service.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="app">
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    <header class="mobile-header">
+      <button class="menu-toggle" id="menuToggle">☰</button>
+      <div class="mobile-brand">AutoSherpa</div>
+      <div style="width: 24px;"></div> <!-- Spacer -->
+    </header>
+
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="logo">
+          <div class="logo-icon">⚡</div>
+          <div class="logo-text">
+            AutoSherpa
+            <span>Car Point</span>
+          </div>
+        </div>
+      </div>
+      <nav class="nav">
+        <a href="index.html" class="nav-item">
+          <div class="nav-icon">🏠</div>
+          <div class="nav-content"><strong>Dashboard</strong><small>Overview</small></div>
+        </a>
+        <a href="sales.html" class="nav-item">
+          <div class="nav-icon">🚗</div>
+          <div class="nav-content"><strong>New Car</strong><small>Inventory</small></div>
+        </a>
+        <a href="usedcar.html" class="nav-item">
+          <div class="nav-icon">🚙</div>
+          <div class="nav-content"><strong>Used Car</strong><small>Pre-owned</small></div>
+        </a>
+        <a href="service.html" class="nav-item active">
+          <div class="nav-icon">🔧</div>
+          <div class="nav-content"><strong>Service</strong><small>Work Orders</small></div>
+        </a>
+        <a href="insurance.html" class="nav-item">
+          <div class="nav-icon">🛡️</div>
+          <div class="nav-content"><strong>Insurance</strong><small>Policies & Renewals</small></div>
+        </a>
+        <a href="refinancing.html" class="nav-item">
+          <div class="nav-icon">💼</div>
+          <div class="nav-content"><strong>Refinancing</strong><small>Loan Options</small></div>
+        </a>
+        <a href="history.html" class="nav-item">
+          <div class="nav-icon">🕘</div>
+          <div class="nav-content"><strong>History</strong><small>User Chat Logs</small></div>
+        </a>
+        <a href="aboutus.html" class="nav-item">
+          <div class="nav-icon">ℹ️</div>
+          <div class="nav-content"><strong>About Us</strong><small>Dealership Info</small></div>
+        </a>
+        <a href="locations.html" class="nav-item">
+          <div class="nav-icon">📍</div>
+          <div class="nav-content"><strong>Contact & Locations</strong><small>Store Details</small></div>
+        </a>
+      </nav>
+      <div class="sidebar-footer">
+        <a href="login.html" class="nav-item logout-item">
+          <div class="nav-icon">🚪</div>
+          <div class="nav-content"><strong>Logout</strong><small>Sign out</small></div>
+        </a>
+      </div>
+    </aside>
+    <main class="main">
+      <div class="header">
+        <div class="header-content">
+          <h1>Service <span class="header-highlight">Dashboard</span></h1>
+          <p>Track service history and upload records for service modules.</p>
+        </div>
+      </div>
+      <div class="card service-report-card-group">
+        <div class="report-card">
+          <div class="report-card-header">
+            <div>
+              <div class="report-card-title">Service Estimate</div>
+              <div class="report-card-subtitle">Total Estimate</div>
+            </div>
+            <button class="report-button" onclick="viewServiceReport('estimate')">View Report</button>
+          </div>
+          <div class="report-card-values">
+            <div class="report-value-block">
+              <span class="report-value" id="estimateTotal">0</span>
+              <span class="report-value-label">Total</span>
+            </div>
+            <div class="report-value-block">
+              <span class="report-value" id="estimateWeekly">0</span>
+              <span class="report-value-label">Weekly</span>
+            </div>
+            <div class="report-value-block">
+              <span class="report-value" id="estimateMonthly">0</span>
+              <span class="report-value-label">Monthly</span>
+            </div>
+          </div>
+        </div>
+        <div class="report-card">
+          <div class="report-card-header">
+            <div>
+              <div class="report-card-title">Service Appointment</div>
+              <div class="report-card-subtitle">Total Appointment</div>
+            </div>
+            <button class="report-button" onclick="viewServiceReport('appointment')">View Report</button>
+          </div>
+          <div class="report-card-values">
+            <div class="report-value-block">
+              <span class="report-value" id="appointmentTotal">0</span>
+              <span class="report-value-label">Total</span>
+            </div>
+            <div class="report-value-block">
+              <span class="report-value" id="appointmentWeekly">0</span>
+              <span class="report-value-label">This Week</span>
+            </div>
+            <div class="report-value-block">
+              <span class="report-value" id="appointmentMonthly">0</span>
+              <span class="report-value-label">This Month</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+          <div>
+            <h3 style="margin:0;">Upload Inventory</h3>
+            <p class="small-text" style="margin:4px 0 0;">Upload service records or forecast data to update the system.</p>
+          </div>
+          <div style="display:flex; gap:10px; align-items:center;">
+            <select id="serviceTemplateType" onchange="updateServiceTemplateLink()" style="padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; background: white;">
+              <option value="robillscube">RO Bills Cube</option>
+              <option value="forecast">Forecast Data</option>
+            </select>
+            <a href="#" id="serviceTemplateLink" onclick="downloadServiceTemplate(event)" style="color: #3b82f6; text-decoration: none; font-weight: 600; font-size: 14px; display: flex; align-items:center; gap:4px;">
+              <span>⬇️</span> Download Template
+            </a>
+          </div>
+        </div>
+        
+        <div style="background: #f8fafc; border: 2px dashed #e2e8f0; border-radius: 12px; padding: 24px; text-align: center;">
+          <form id="formServiceUpload" onsubmit="uploadServiceFile(event)" style="display:flex; flex-direction: column; align-items:center; gap: 12px;">
+            <div style="font-size: 32px; margin-bottom: 8px;">📄</div>
+            <div style="color: #475569; font-weight: 500;">Select CSV or Excel file to upload</div>
+            <input type="file" id="fileServiceUpload" accept=".xlsx, .csv" style="margin: 8px 0;">
+            <div style="display:flex; gap:10px;">
+              <button type="submit" id="btnServiceUpload" style="padding: 10px 24px; border: none; border-radius: 8px; background: #0052cc; color: white; cursor: pointer; font-weight: 600; transition: all 0.2s;">
+                Upload & Process Data
+              </button>
+              <button type="button" onclick="openServicePreview()" style="padding: 10px 20px; border: 1px solid #cbd5e1; border-radius: 8px; background: #f1f5f9; color: #334155; cursor: pointer; font-weight: 600; transition: all 0.2s;">
+                👁️ Preview
+              </button>
+            </div>
+          </form>
+          <div id="statusServiceUpload" style="margin-top: 15px; font-weight:500; font-size:14px; min-height: 20px;"></div>
+        </div>
+      </div>
+      <div class="card" id="serviceTableSection">
+        <h3>Service Records</h3>
+        <p class="small-text">Latest service module appointments and estimates.</p>
+        <div class="service-filter-section">
+          <div class="filter-header">
+            <div class="range-selector">
+              <button class="range-pill active" onclick="onServiceRangeChange('all')">
+                <span class="pill-icon">📅</span> All Time
+              </button>
+              <button class="range-pill" onclick="onServiceRangeChange('week')">
+                <span class="pill-icon">🗓️</span> Weekly
+              </button>
+              <button class="range-pill" onclick="onServiceRangeChange('month')">
+                <span class="pill-icon">📊</span> Monthly
+              </button>
+              <button class="range-pill" onclick="onServiceRangeChange('custom')">
+                <span class="pill-icon">⚙️</span> Custom
+              </button>
+            </div>
+            
+            <button class="download-excel-btn" onclick="downloadServiceExcel()">
+              <span class="icon">📥</span> Download Excel
+            </button>
+          </div>
+
+          <div class="filter-panels-container">
+            <div id="serviceAllPanel" class="filter-panel active">
+              <!-- Empty for cleaner design -->
+            </div>
+
+            <div id="serviceWeekPanel" class="filter-panel hidden">
+              <div class="selector-box">
+                <div class="input-group">
+                  <label>Select Work Week</label>
+                  <input type="week" id="serviceWeekInput" onchange="onServiceWeekDateChange(this.value)">
+                </div>
+                <div class="status-summary" id="serviceWeekSummary">Select a week to view specific data.</div>
+              </div>
+            </div>
+
+            <div id="serviceMonthPanel" class="filter-panel hidden">
+              <div class="selector-box">
+                <div class="input-group">
+                  <label>Select Billing Month</label>
+                  <input type="month" id="serviceMonthInput" onchange="onServiceMonthDateChange(this.value)">
+                </div>
+                <div class="status-summary" id="serviceMonthSummary">Select a month to filter records.</div>
+              </div>
+            </div>
+
+            <div id="serviceCustomPanel" class="filter-panel hidden">
+              <div class="selector-box">
+                <div class="date-range-row">
+                  <div class="input-group">
+                    <label>Start Date</label>
+                    <input type="date" id="serviceStartDate">
+                  </div>
+                  <div class="input-group">
+                    <label>End Date</label>
+                    <input type="date" id="serviceEndDate">
+                  </div>
+                  <button class="apply-filter-btn" onclick="applyServiceDateFilter()">Apply Filter</button>
+                </div>
+                <div class="status-summary" id="serviceCustomSummary">Select a custom date range.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="filter-tabs">
+          <button class="filter-tab active" onclick="filterServiceType('all')">All Items</button>
+          <button class="filter-tab" onclick="filterServiceType('estimate')">Service Estimate</button>
+          <button class="filter-tab" onclick="filterServiceType('appointment')">Service Appointment</button>
+        </div>
+        <div class="table-wrapper">
+          <table id="serviceTable">
+            <thead id="serviceTableHead">
+              <tr>
+                <th>Name</th>
+                <th>Phone Number</th>
+                <th>Vehicle Number</th>
+                <th>Appointment Date & Time</th>
+                <th>Service Preference</th>
+              </tr>
+            </thead>
+            <tbody id="serviceTableBody">
+              <tr><td colspan="5" class="empty-state">Loading service records…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+  <script src="js/config.js?v=1.2"></script>
+  <script src="js/service.js"></script>
+
+  <!-- ================= Service Preview Modal ================= -->
+  <div id="servicePreviewModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:9999; overflow-y:auto; padding: 30px 20px;">
+    <div style="background:white; border-radius:24px; max-width:1200px; margin:0 auto; padding:32px; box-shadow: 0 25px 60px rgba(0,0,0,0.2);">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+        <div>
+          <h3 id="servicePreviewTitle" style="font-size:22px; font-weight:700; color:#0f172a; margin:0;"></h3>
+          <p id="servicePreviewCount" style="font-size:13px; color:#64748b; margin:4px 0 0;"></p>
+        </div>
+        <button onclick="closeServicePreview()" style="background:#f1f5f9; border:none; border-radius:12px; padding:10px 18px; font-size:14px; font-weight:600; cursor:pointer; color:#334155;">✕ Close</button>
+      </div>
+      <div style="overflow-x:auto; border-radius:16px; border:1px solid #e2e8f0;">
+        <table id="servicePreviewTable" style="width:100%; border-collapse:collapse; background:white;">
+          <thead id="servicePreviewThead"></thead>
+          <tbody id="servicePreviewTbody"></tbody>
+        </table>
+      </div>
+      <div id="servicePreviewLoader" style="text-align:center; padding:40px; color:#64748b; font-size:14px; display:none;">Loading data...</div>
+      <div id="servicePreviewEmpty" style="text-align:center; padding:40px; color:#94a3b8; font-size:14px; display:none;">No records found in this table.</div>
+      <div id="servicePreviewPagination" style="display:flex; justify-content:center; gap:8px; margin-top:20px; flex-wrap:wrap;"></div>
+    </div>
+  </div>
+<script src="js/mobile.js"></script>
+</body>
+</html>

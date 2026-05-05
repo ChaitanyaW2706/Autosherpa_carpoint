@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>AUTOSherpa · Admin Login</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/login.css">
+</head>
+<body>
+  <div class="login-shell">
+    <div class="login-card">
+      <header class="login-header">
+        <div class="brand-badge">A</div>
+        <div class="brand-copy">
+          <h1>AUTOSherpa</h1>
+          <p>Bot Admin Panel</p>
+        </div>
+      </header>
+
+      <div class="divider"></div>
+
+      <div class="login-body">
+        <div class="login-title">Email / Password</div>
+        <p class="login-subtitle">Sign in to manage your dealership intelligence and admin tools.</p>
+
+        <div class="form-toggle">
+          <button id="loginTab" class="tab-btn active">Login</button>
+          <button id="registerTab" class="tab-btn">Register</button>
+        </div>
+
+        <form id="loginForm" class="login-form" action="#" method="post">
+          <label class="form-label" for="email">Email</label>
+          <input class="form-input" type="email" id="email" name="email" placeholder="admin@sherpa.com" required>
+
+          <label class="form-label" for="password">Password</label>
+          <input class="form-input" type="password" id="password" name="password" placeholder="Enter your password" required>
+
+          <button type="submit" class="btn-submit">Sign In</button>
+        </form>
+
+        <form id="registerForm" class="login-form hidden" action="#" method="post">
+          <label class="form-label" for="regEmail">Email</label>
+          <input class="form-input" type="email" id="regEmail" name="email" placeholder="admin@sherpa.com" required>
+
+          <label class="form-label" for="regPassword">Password</label>
+          <input class="form-input" type="password" id="regPassword" name="password" placeholder="Enter your password" required>
+
+          <button type="submit" class="btn-submit">Register</button>
+        </form>
+
+        <div class="login-footer">Drive More Revenue from Every Customer</div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/config.js?v=1.2"></script>
+  <script src="js/login.js"></script>
+</body>
+</html>

@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>AutoSherpa Ops · About Us</title>
+  <link rel="stylesheet" href="css/index.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/aboutus.css">
+</head>
+<body>
+  <div class="app">
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    <header class="mobile-header">
+      <button class="menu-toggle" id="menuToggle">☰</button>
+      <div class="mobile-brand">AutoSherpa</div>
+      <div style="width: 24px;"></div> <!-- Spacer -->
+    </header>
+
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="logo">
+          <div class="logo-icon">⚡</div>
+          <div class="logo-text">
+            AutoSherpa
+            <span>Car Point</span>
+          </div>
+        </div>
+      </div>
+      <nav class="nav">
+        <a href="index.html" class="nav-item">
+          <div class="nav-icon">🏠</div>
+          <div class="nav-content">
+            <strong>Dashboard</strong>
+            <small>Overview</small>
+          </div>
+        </a>
+
+        <a href="sales.html" class="nav-item">
+          <div class="nav-icon">🚗</div>
+          <div class="nav-content">
+            <strong>New Car Inventory</strong>
+            <small>List & Upload</small>
+          </div>
+        </a>
+
+        <a href="usedcar.html" class="nav-item">
+          <div class="nav-icon">🚙</div>
+          <div class="nav-content">
+            <strong>Used Car Inventory</strong>
+            <small>Pre-owned</small>
+          </div>
+        </a>
+
+        <a href="service.html" class="nav-item">
+          <div class="nav-icon">🔧</div>
+          <div class="nav-content">
+            <strong>Service Data</strong>
+            <small>History & Reports</small>
+          </div>
+        </a>
+
+        <a href="insurance.html" class="nav-item">
+          <div class="nav-icon">🛡️</div>
+          <div class="nav-content">
+            <strong>Insurance Data</strong>
+            <small>Policies & Renewals</small>
+          </div>
+        </a>
+
+        <a href="refinancing.html" class="nav-item">
+          <div class="nav-icon">💼</div>
+          <div class="nav-content">
+            <strong>Refinancing</strong>
+            <small>Loan Options</small>
+          </div>
+        </a>
+
+        <a href="history.html" class="nav-item">
+          <div class="nav-icon">🕘</div>
+          <div class="nav-content">
+            <strong>History</strong>
+            <small>User Chat Logs</small>
+          </div>
+        </a>
+
+        <a href="aboutus.html" class="nav-item active">
+          <div class="nav-icon">ℹ️</div>
+          <div class="nav-content">
+            <strong>About Us</strong>
+            <small>Dealership Info</small>
+          </div>
+        </a>
+
+        <a href="locations.html" class="nav-item">
+          <div class="nav-icon">📍</div>
+          <div class="nav-content">
+            <strong>Contact & Locations</strong>
+            <small>Store Details</small>
+          </div>
+        </a>
+      </nav>
+      <div class="sidebar-footer">
+        <a href="login.html" class="nav-item logout-item">
+          <div class="nav-icon">🚪</div>
+          <div class="nav-content">
+            <strong>Logout</strong>
+            <small>Sign out</small>
+          </div>
+        </a>
+      </div>
+    </aside>
+
+    <main class="main">
+      <div style="padding: 20px; max-width: 100%; margin: 0 auto;">
+        <div class="aboutus-header">
+          <h1>About Us</h1>
+          <p>This content is used by the bot to answer dealership questions</p>
+        </div>
+
+        <div id="successMsg" class="success-msg"></div>
+        <div id="errorMsg" class="error-msg"></div>
+
+        <div class="form-section">
+          <h2>Dealership Information</h2>
+          
+          <div class="form-group">
+            <label>Dealership Name <span>*</span></label>
+            <input type="text" id="dealershipName" placeholder="e.g., Sherpa Hyundai – Bangalore">
+          </div>
+
+          <div class="form-group">
+            <label>Tagline <span>*</span></label>
+            <input type="text" id="tagline" placeholder="e.g., Bengaluru's Most Trusted Hyundai Dealer">
+          </div>
+
+          <div class="form-group">
+            <label>About Description <span>*</span></label>
+            <textarea id="aboutDescription" placeholder="Describe your dealership..."></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>Brand <span>*</span></label>
+            <select id="brand">
+              <option value="">Select a brand...</option>
+              <option value="hyundai">Hyundai</option>
+              <option value="honda">Honda</option>
+              <option value="maruti">Maruti</option>
+              <option value="toyota">Toyota</option>
+              <option value="mahindra">Mahindra</option>
+              <option value="tata">Tata</option>
+              <option value="kia">Kia</option>
+              <option value="skoda">Skoda</option>
+              <option value="volkswagen">Volkswagen</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="modules-section">
+          <h2>Select Modules <span style="color: #ef4444;">*</span></h2>
+          <p style="margin-top: 0 0 16px; color: #64748b; font-size: 14px;">Choose which modules to display in the chatbot</p>
+          <div class="modules-grid">
+            <div class="module-checkbox">
+              <input type="checkbox" id="module-newcars" value="newcars">
+              <label for="module-newcars">New Cars</label>
+            </div>
+            <div class="module-checkbox">
+              <input type="checkbox" id="module-usedcars" value="usedcars">
+              <label for="module-usedcars">Used Cars</label>
+            </div>
+            <div class="module-checkbox">
+              <input type="checkbox" id="module-service" value="service">
+              <label for="module-service">Service</label>
+            </div>
+            <div class="module-checkbox">
+              <input type="checkbox" id="module-insurance" value="insurance">
+              <label for="module-insurance">Insurance</label>
+            </div>
+            <div class="module-checkbox">
+              <input type="checkbox" id="module-refinance" value="refinance">
+              <label for="module-refinance">Refinance</label>
+            </div>
+          </div>
+        </div>
+
+        <div style="background: white; border-radius: 16px; padding: 30px; box-shadow: 0 4px 12px rgba(15,23,42,0.08); margin-bottom: 20px;">
+          <div class="form-actions">
+            <button class="btn btn-secondary" onclick="resetForm()">Reset</button>
+            <button class="btn btn-primary" id="saveBtn" onclick="saveAboutUs()">Save Changes</button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/config.js?v=1.2"></script>
+  <script src="js/aboutus.js"></script>
+<script src="js/mobile.js"></script>
+</body>
+</html>

@@ -1,0 +1,293 @@
+/* Insurance Page – Force Index Theme Look */
+/* index.css must be loaded before this file */
+
+.card {
+  background: white;
+  border-radius: 32px;
+  padding: 32px;
+  box-shadow: var(--glass-shadow);
+  border: 1px solid var(--neutral-200);
+  margin-bottom: 32px;
+}
+
+/* Header spacing inside cards */
+.card h3 {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--neutral-900);
+  letter-spacing: -0.5px;
+  margin-bottom: 16px;
+}
+
+/* Tabs wrapper card */
+.insurance-tabs {
+  display: flex;
+  gap: 14px;
+}
+
+/* Tabs – same pill buttons as index cards footer actions */
+.tab-btn {
+  padding: 12px 22px;
+  border-radius: 999px;
+  border: 1px solid var(--neutral-300);
+  background: white;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--neutral-700);
+  transition: all 0.25s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tab-btn:hover {
+  transform: translateY(-2px);
+  border-color: var(--primary-100);
+  box-shadow: 0 12px 22px -12px rgba(59, 91, 155, 0.25);
+}
+
+.tab-btn.active {
+  background: var(--gradient-primary);
+  color: white;
+  border-color: transparent;
+  box-shadow: 0 14px 28px -12px rgba(59, 91, 155, 0.45);
+}
+
+/* Primary action button */
+button.primary {
+  background: var(--gradient-primary);
+  color: white;
+  padding: 10px 18px;
+  border-radius: 14px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 10px 22px -10px rgba(59, 91, 155, 0.45);
+  transition: all 0.25s ease;
+}
+
+button.primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 18px 30px -12px rgba(59, 91, 155, 0.55);
+}
+
+/* Tables – match index card look */
+.table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  margin-top: 16px;
+}
+
+table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: white;
+  border-radius: 24px;
+  overflow: hidden;
+  border: 1px solid var(--neutral-200);
+}
+
+th {
+  background: var(--neutral-100);
+  padding: 14px 16px;
+  text-align: left;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--neutral-700);
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--neutral-200);
+}
+
+td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--neutral-200);
+  font-size: 14px;
+  color: var(--neutral-700);
+}
+
+tbody tr:hover td {
+  background: var(--neutral-50);
+}
+
+/* Status badge (optional) */
+td .status {
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  background: var(--neutral-100);
+  color: var(--primary-500);
+}
+
+/* Hide helper */
+.hidden {
+  display: none;
+}
+
+/* Responsive tweaks */
+@media (max-width: 900px) {
+  .card {
+    padding: 24px;
+    border-radius: 24px;
+  }
+
+  .tab-btn {
+    padding: 10px 16px;
+    font-size: 12px;
+  }
+}
+/* ===== Professional Table Enhancements ===== */
+
+/* Compact row height */
+table td, table th {
+  vertical-align: middle;
+}
+
+/* Name column – better readability */
+td.name-cell {
+  font-weight: 600;
+  color: var(--neutral-900);
+  line-height: 1.4;
+}
+
+/* Vehicle number – monospaced look */
+td.vehicle-cell {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  letter-spacing: 0.5px;
+}
+
+/* Date badge */
+td.date-cell span {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--neutral-100);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--neutral-700);
+}
+
+/* Time slot badge */
+td.time-cell span {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 10px;
+  background: #eef2ff;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--primary-600);
+}
+
+/* Status pill */
+td .status-pill {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: capitalize;
+}
+
+.status-pill.pending {
+  background: #fff7ed;
+  color: #c2410c;
+}
+
+.status-pill.approved {
+  background: #ecfdf5;
+  color: #047857;
+}
+
+.status-pill.rejected {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.status-pill.completed {
+  background: #ecfdf5;
+  color: #047857;
+}
+
+.status-pill.cancelled {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+/* Hover highlight */
+tbody tr:hover {
+  background: linear-gradient(90deg, rgba(59,91,155,0.04), transparent);
+}
+/* ===== View / Download Action Styles ===== */
+
+.doc-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.doc-actions a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  color: var(--primary-600);
+  background: #eef2ff;
+  border: 1px solid #c7d2fe;
+  transition: all 0.2s ease;
+}
+
+.doc-actions a:hover {
+  background: var(--gradient-primary);
+  color: white;
+  border-color: transparent;
+  box-shadow: 0 10px 20px -10px rgba(59, 91, 155, 0.4);
+  transform: translateY(-1px);
+}
+
+.doc-actions a .icon {
+  font-size: 14px;
+  line-height: 1;
+}
+/* ===== Pagination ===== */
+/* Fix pagination position & spacing */
+.pagination {
+  display: flex;
+  justify-content: center;  /* 👈 center-la varum */
+  gap: 8px;
+  margin-top: 16px;
+  padding-right: 6px;        /* card padding-ku align (optional) */
+}
+
+.pagination button {
+  min-width: 34px;
+  height: 34px;
+  padding: 0 10px;
+  border-radius: 10px;
+  border: 1px solid var(--neutral-300);
+  background: white;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  color: var(--neutral-700);
+  transition: all 0.2s ease;
+}
+
+.pagination button:hover {
+  border-color: var(--primary-100);
+  box-shadow: 0 8px 18px -10px rgba(59, 91, 155, 0.35);
+  transform: translateY(-1px);
+}
+
+.pagination button.active {
+  background: var(--gradient-primary);
+  color: white;
+  border-color: transparent;
+  box-shadow: 0 12px 22px -10px rgba(59, 91, 155, 0.45);
+}
