@@ -291,3 +291,4 @@ tbody tr:hover {
   border-color: transparent;
   box-shadow: 0 12px 22px -10px rgba(59, 91, 155, 0.45);
 }
+@media (max-width: 768px) { .insurance-tabs { flex-direction: column; } .tab-btn { width: 100%; text-align: center; } .tab-section { padding: 16px; } .flex.space-between { flex-direction: column; align-items: stretch; gap: 10px; } .card[style*=" display: flex\] { flex-direction: column !important; } }

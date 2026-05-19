@@ -826,55 +826,49 @@
 .unblock-btn:hover { background: #dcfce7; border-color: #86efac; }
 
 /* ── Responsive ── */
-@media (max-width: 1100px) {
-  .stats-row { gap: 10px; }
-  .stat-pill { min-width: 110px; }
-}
-
 @media (max-width: 900px) {
-  .stats-row { flex-direction: column; }
+  .stats-row { flex-direction: column; gap: 12px; }
   .stat-pill { flex: unset; width: 100%; }
-  .filter-row { flex-direction: column; align-items: stretch; }
+  .filter-row { flex-direction: column; align-items: stretch; gap: 10px; }
   .filter-row input, .filter-row select { min-width: unset; width: 100%; }
-  .filters-top-row { flex-direction: column; align-items: stretch; }
+  .filters-top-row { flex-direction: column; align-items: stretch; gap: 12px; }
   .block-mgr-btn { width: 100%; justify-content: center; }
+  .module-tabs { justify-content: center; }
 }
 
 @media (max-width: 768px) {
-  #historyTable,
-  #historyTable thead,
-  #historyTable tbody,
-  #historyTable th,
-  #historyTable td,
-  #historyTable tr { display: block; }
+  /* Table Responsiveness */
+  .table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 12px;
+    margin: 0 -10px;
+  }
+  
+  #historyTable {
+    min-width: 800px; /* Force scroll instead of breaking layout */
+    display: table;
+  }
 
-  #historyTable thead tr {
-    position: absolute;
-    top: -9999px;
-    left: -9999px;
+  #historyTable thead {
+    display: table-header-group;
+    position: static;
   }
 
   #historyTable tr {
-    margin-bottom: 16px;
-    border: 1px solid var(--border);
-    border-radius: 12px;
+    display: table-row;
+    margin-bottom: 0;
+    border: none;
   }
 
   #historyTable td {
-    border: none;
+    display: table-cell;
+    padding: 12px 10px;
+    padding-left: 10px;
     border-bottom: 1px solid var(--border);
-    position: relative;
-    padding-left: 48%;
   }
 
   #historyTable td:before {
-    position: absolute;
-    top: 13px;
-    left: 14px;
-    width: 42%;
-    padding-right: 8px;
-    font-weight: 700;
-    font-size: 11px;
     color: var(--muted);
     content: attr(data-label);
     text-transform: uppercase;

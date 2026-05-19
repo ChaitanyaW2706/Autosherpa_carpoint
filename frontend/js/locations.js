@@ -3,8 +3,8 @@
 let locations = [];
 
 async function loadLocations() {
-  const container = document.getElementById('locationsContainer');
-  container.innerHTML = '<div style="text-align: center; color: #64748b; padding: 40px;">Loading locations...</div>';
+  const body = document.getElementById('locationsBody');
+  body.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #64748b; padding: 40px;">Loading locations...</td></tr>';
 
   try {
     const res = await fetch(`${API}/locations/locations`);
@@ -12,60 +12,49 @@ async function loadLocations() {
     locations = await res.json();
 
     if (!locations.length) {
-      container.innerHTML = '<div style="text-align: center; color: #64748b; padding: 40px;">No locations found. Click "Add Location" to get started.</div>';
+      body.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #64748b; padding: 40px;">No locations found. Click "+ Add Location" to get started.</td></tr>';
       return;
     }
 
-    container.innerHTML = locations.map(loc => `
-      <div class="location-card">
-        <div style="display: flex; justify-content: space-between; align-items: start;">
-          <div style="flex: 1;">
-            <h3>📍 ${escapeHtml(loc.location_name || 'Unnamed Location')}</h3>
-            <div class="location-info">
-              <div class="info-field">
-                <strong>Address</strong>
-                ${escapeHtml(loc.address || '—')}
-              </div>
-              <div class="info-field">
-                <strong>Phone</strong>
-                <a href="tel:${escapeHtml(loc.phone || '')}" style="color: #0f72f8; text-decoration: none;">
-                  ${escapeHtml(loc.phone || '—')}
-                </a>
-              </div>
-              <div class="info-field">
-                <strong>Email</strong>
-                <a href="mailto:${escapeHtml(loc.email || '')}" style="color: #0f72f8; text-decoration: none;">
-                  ${escapeHtml(loc.email || '—')}
-                </a>
-              </div>
-              <div class="info-field">
-                <strong>Hours</strong>
-                ${escapeHtml(loc.hours || '—').replace(/\n/g, '<br>')}
-              </div>
+    body.innerHTML = locations.map(loc => `
+      <tr>
+        <td style="font-weight: 700; color: #0052cc;">
+          ${escapeHtml(loc.location_name || 'Unnamed')}
+        </td>
+        <td style="max-width: 200px;">
+          ${escapeHtml(loc.address || '—')}
+          ${loc.map_url ? `
+            <div style="margin-top: 4px;">
+              <a href="${escapeHtml(loc.map_url)}" target="_blank" style="color: #2563eb; font-size: 11px; text-decoration: none;">📍 Map</a>
             </div>
-            ${loc.map_url ? `
-              <div style="margin-top: 12px;">
-                <a href="${escapeHtml(loc.map_url)}" target="_blank" style="color: #0f72f8; text-decoration: none;">
-                  📍 View on Map
-                </a>
-              </div>
-            ` : ''}
+          ` : ''}
+        </td>
+        <td>
+          <div style="font-size: 13px;">📞 ${escapeHtml(loc.phone || '—')}</div>
+          <div style="font-size: 13px; color: #64748b;">✉️ ${escapeHtml(loc.email || '—')}</div>
+        </td>
+        <td style="font-size: 12px; color: #475569;">
+          ${escapeHtml(loc.hours || '—').replace(/\n/g, '<br>')}
+        </td>
+        <td>
+          <span class="badge-module">${escapeHtml(loc.module || 'All')}</span>
+        </td>
+        <td>
+          <span class="badge-status ${loc.status === 'active' ? 'badge-active' : 'badge-inactive'}">
+            ${loc.status === 'active' ? '✓ Active' : '✗ Inactive'}
+          </span>
+        </td>
+        <td>
+          <div class="table-actions">
+            <button class="btn-icon btn-icon-edit" onclick="openEditLocationModal(${loc.id})" title="Edit">✏️</button>
+            <button class="btn-icon btn-icon-delete" onclick="deleteLocation(${loc.id})" title="Delete">🗑️</button>
           </div>
-          <div style="flex-shrink: 0; display: flex; gap: 8px;">
-            <span style="background: ${loc.status === 'active' ? '#dcfce7' : '#fef2f2'}; color: ${loc.status === 'active' ? '#166534' : '#991b1b'}; padding: 4px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: 500;">
-              ${loc.status === 'active' ? '✓ Active' : '✗ Inactive'}
-            </span>
-          </div>
-        </div>
-        <div class="location-actions">
-          <button class="btn-small btn-edit" onclick="openEditLocationModal(${loc.id})">Edit</button>
-          <button class="btn-small btn-delete" onclick="deleteLocation(${loc.id})">Delete</button>
-        </div>
-      </div>
+        </td>
+      </tr>
     `).join('');
   } catch (error) {
     console.error('Failed to load locations:', error);
-    container.innerHTML = '<div style="text-align: center; color: #ef4444; padding: 40px;">Unable to load locations</div>';
+    body.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #ef4444; padding: 40px;">Unable to load locations</td></tr>';
   }
 }
 
@@ -84,6 +73,7 @@ function openAddLocationModal() {
   document.getElementById('latitude').value = '';
   document.getElementById('longitude').value = '';
   document.getElementById('mapUrl').value = '';
+  document.getElementById('module').value = '';
   document.getElementById('status').value = 'active';
   
   const modal = document.getElementById('locationModal');
@@ -104,6 +94,7 @@ function openEditLocationModal(id) {
   document.getElementById('latitude').value = location.latitude || '';
   document.getElementById('longitude').value = location.longitude || '';
   document.getElementById('mapUrl').value = location.map_url || '';
+  document.getElementById('module').value = location.module || 'All';
   document.getElementById('status').value = location.status || 'active';
 
   const modal = document.getElementById('locationModal');
@@ -126,9 +117,11 @@ async function saveLocation() {
     latitude: document.getElementById('latitude').value ? parseFloat(document.getElementById('latitude').value) : null,
     longitude: document.getElementById('longitude').value ? parseFloat(document.getElementById('longitude').value) : null,
     map_url: document.getElementById('mapUrl').value.trim(),
+    module: document.getElementById('module').value,
     status: document.getElementById('status').value,
   };
 
+  if (!body.module) return alert('Please select a module');
   if (!body.location_name) return alert('Location name is required');
   if (!body.address) return alert('Address is required');
   if (!body.phone) return alert('Phone is required');
@@ -173,6 +166,7 @@ async function deleteLocation(id) {
     alert('Error: ' + error.message);
   }
 }
+
 
 window.addEventListener('DOMContentLoaded', () => {
   loadLocations();

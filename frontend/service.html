@@ -16,7 +16,7 @@
     <header class="mobile-header">
       <button class="menu-toggle" id="menuToggle">☰</button>
       <div class="mobile-brand">AutoSherpa</div>
-      <div style="width: 24px;"></div> <!-- Spacer -->
+      <div style="width: 40px;"></div> <!-- Spacer -->
     </header>
 
     <aside class="sidebar">
@@ -130,37 +130,44 @@
         </div>
       </div>
       <div class="card">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-          <div>
-            <h3 style="margin:0;">Upload Inventory</h3>
-            <p class="small-text" style="margin:4px 0 0;">Upload service records or forecast data to update the system.</p>
-          </div>
-          <div style="display:flex; gap:10px; align-items:center;">
-            <select id="serviceTemplateType" onchange="updateServiceTemplateLink()" style="padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; background: white;">
-              <option value="robillscube">RO Bills Cube</option>
-              <option value="forecast">Forecast Data</option>
-            </select>
-            <a href="#" id="serviceTemplateLink" onclick="downloadServiceTemplate(event)" style="color: #3b82f6; text-decoration: none; font-weight: 600; font-size: 14px; display: flex; align-items:center; gap:4px;">
-              <span>⬇️</span> Download Template
-            </a>
-          </div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+          <h3 style="margin:0;">Service Data Upload</h3>
         </div>
-        
-        <div style="background: #f8fafc; border: 2px dashed #e2e8f0; border-radius: 12px; padding: 24px; text-align: center;">
-          <form id="formServiceUpload" onsubmit="uploadServiceFile(event)" style="display:flex; flex-direction: column; align-items:center; gap: 12px;">
-            <div style="font-size: 32px; margin-bottom: 8px;">📄</div>
-            <div style="color: #475569; font-weight: 500;">Select CSV or Excel file to upload</div>
-            <input type="file" id="fileServiceUpload" accept=".xlsx, .csv" style="margin: 8px 0;">
-            <div style="display:flex; gap:10px;">
-              <button type="submit" id="btnServiceUpload" style="padding: 10px 24px; border: none; border-radius: 8px; background: #0052cc; color: white; cursor: pointer; font-weight: 600; transition: all 0.2s;">
-                Upload & Process Data
-              </button>
-              <button type="button" onclick="openServicePreview()" style="padding: 10px 20px; border: 1px solid #cbd5e1; border-radius: 8px; background: #f1f5f9; color: #334155; cursor: pointer; font-weight: 600; transition: all 0.2s;">
-                👁️ Preview
-              </button>
+
+        <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+          <!-- Forecasted Data Upload Card -->
+          <div class="card" style="flex: 1; min-width: 300px; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
+            <h4 style="margin-top:0;">Forecast Data</h4>
+            <p style="font-size: 14px; color: #64748b; margin-bottom: 15px;">Upload expected service renewals and forecasting data.</p>
+            <div style="margin-bottom: 15px;">
+              <a href="#" onclick="downloadServiceTemplateByType(event, 'forecast')" style="color: #3b82f6; text-decoration: none; font-weight: 500;">⬇️ Download Template</a>
             </div>
-          </form>
-          <div id="statusServiceUpload" style="margin-top: 15px; font-weight:500; font-size:14px; min-height: 20px;"></div>
+            <form id="formServiceForecast" onsubmit="uploadServiceFileByType(event, 'forecast')" style="display: flex; flex-direction: column; gap: 10px;">
+              <input type="file" id="fileServiceForecast" accept=".csv, .xlsx" required style="border: 1px solid #ccc; padding: 5px; border-radius: 4px;" />
+              <div style="display: flex; gap: 10px;">
+                <button type="submit" id="btnServiceForecast" class="btn" style="flex:1; background: #3b82f6; color: white; padding: 10px; border: none; border-radius: 4px; cursor: pointer; font-weight: 600;">Upload Data</button>
+                <button type="button" onclick="openServicePreviewByType('forecast')" style="flex:1; background: #f1f5f9; color: #334155; padding: 10px; border: 1px solid #cbd5e1; border-radius: 4px; cursor: pointer; font-weight: 600;">👁️ Preview</button>
+              </div>
+            </form>
+            <div id="statusServiceForecast" style="margin-top: 10px; font-size: 14px; font-weight: 500;"></div>
+          </div>
+
+          <!-- Individual Report Upload Card -->
+          <div class="card" style="flex: 1; min-width: 300px; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
+            <h4 style="margin-top:0;">RO Bills Cube</h4>
+            <p style="font-size: 14px; color: #64748b; margin-bottom: 15px;">Upload comprehensive RO Bills and service records.</p>
+            <div style="margin-bottom: 15px;">
+              <a href="#" onclick="downloadServiceTemplateByType(event, 'robillscube')" style="color: #3b82f6; text-decoration: none; font-weight: 500;">⬇️ Download Template</a>
+            </div>
+            <form id="formServiceROBills" onsubmit="uploadServiceFileByType(event, 'robillscube')" style="display: flex; flex-direction: column; gap: 10px;">
+              <input type="file" id="fileServiceROBills" accept=".csv, .xlsx" required style="border: 1px solid #ccc; padding: 5px; border-radius: 4px;" />
+              <div style="display: flex; gap: 10px;">
+                <button type="submit" id="btnServiceROBills" class="btn" style="flex:1; background: #3b82f6; color: white; padding: 10px; border: none; border-radius: 4px; cursor: pointer; font-weight: 600;">Upload Data</button>
+                <button type="button" onclick="openServicePreviewByType('robillscube')" style="flex:1; background: #f1f5f9; color: #334155; padding: 10px; border: 1px solid #cbd5e1; border-radius: 4px; cursor: pointer; font-weight: 600;">👁️ Preview</button>
+              </div>
+            </form>
+            <div id="statusServiceROBills" style="margin-top: 10px; font-size: 14px; font-weight: 500;"></div>
+          </div>
         </div>
       </div>
       <div class="card" id="serviceTableSection">
@@ -279,6 +286,6 @@
       <div id="servicePreviewPagination" style="display:flex; justify-content:center; gap:8px; margin-top:20px; flex-wrap:wrap;"></div>
     </div>
   </div>
-<script src="js/mobile.js"></script>
+
 </body>
 </html>

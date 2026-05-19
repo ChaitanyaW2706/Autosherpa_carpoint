@@ -172,6 +172,7 @@ def export_service_records(
     start_date: Optional[str] = Query(None, description="Custom start date YYYY-MM-DD"),
     end_date: Optional[str] = Query(None, description="Custom end date YYYY-MM-DD"),
     limit: int = Query(2000, ge=1, le=20000),
+    type: Optional[str] = Query("all", description="all|estimate|appointment"),
 ):
     """Export filtered service records to Excel."""
     now_utc = datetime.now(timezone.utc)
@@ -214,7 +215,7 @@ def export_service_records(
         except Exception:
             return []
 
-    table_queries = [
+    all_queries = [
         (
             "Service Estimate",
             f"SELECT id, phone_number, vehicle_reg, estimate_type, status, request_timestamp AS created_at, estimated_cost FROM service_estimate_requests{date_filter.replace('created_at', 'request_timestamp')} ORDER BY request_timestamp DESC LIMIT %s",
@@ -224,6 +225,14 @@ def export_service_records(
             f"SELECT id, full_name, customer_phone, appointment_date, timing AS appointment_time, status, booking_timestamp AS created_at, pickup_address, service_preference, vehicle_reg FROM appointment_bookings{date_filter.replace('created_at', 'booking_timestamp')} ORDER BY booking_timestamp DESC LIMIT %s",
         ),
     ]
+
+    table_queries = []
+    if type == "estimate":
+        table_queries.append(all_queries[0])
+    elif type == "appointment":
+        table_queries.append(all_queries[1])
+    else:
+        table_queries = all_queries
 
     for source, query_text in table_queries:
         query_params = params.copy()

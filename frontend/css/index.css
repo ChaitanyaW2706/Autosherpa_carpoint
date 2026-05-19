@@ -1005,10 +1005,6 @@ body {
 }
 
 @media (max-width: 900px) {
-  .sidebar {
-    display: none;
-  }
-  
   .main {
     padding: 24px;
   }
@@ -1855,123 +1851,131 @@ body {
   opacity: 1;
 }
 
-/* Tablet & Large Mobile */
-@media (max-width: 1200px) {
-  .stats-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  .cards {
-    grid-template-columns: repeat(2, 1fr);
-  }
+/* ==========================================================================
+   EXPERT RESPONSIVE DESIGN SYSTEM (Breakpoints: 1024px, 768px, 480px)
+   ========================================================================== */
+
+/* --- 1024px - Tablets & Small Laptops --- */
+@media (max-width: 1024px) {
+  .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 20px; }
+  .dash-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 20px; }
+  .cards { grid-template-columns: repeat(2, 1fr); gap: 20px; }
+  
+  .main { padding: 32px 24px; }
+  .header h1 { font-size: 36px; }
 }
 
-/* Small Screens / Mobile */
+/* --- 768px - Mobile Phones & Portrait Tablets --- */
 @media (max-width: 768px) {
-  .app {
-    flex-direction: column;
+  html body .app { flex-direction: column; }
+
+  /* Mobile Branding Header */
+  html body .mobile-header {
+    display: flex !important;
+    background: linear-gradient(135deg, #004aad 0%, #0052cc 100%) !important;
+    padding: 14px 20px;
+    height: 64px;
+    z-index: 1000;
   }
 
-  .mobile-header {
+  /* ABSOLUTE SIDEBAR OVERRIDE - Rock Solid Version */
+  html body .app aside.sidebar {
+    display: none !important;
+    position: fixed !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 280px !important;
+    height: 100vh !important;
+    z-index: 10000 !important;
+    background: linear-gradient(180deg, #004aad 0%, #003d99 100%) !important;
+    padding-top: 20px !important;
+    flex-direction: column !important;
+    visibility: visible !important;
+  }
+
+  html body .app aside.sidebar.active {
+    display: flex !important;
+  }
+
+  /* Sidebar contents visibility */
+  .sidebar .nav {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    padding: 0 10px !important;
+  }
+
+  .sidebar .nav-item {
+    display: flex !important;
+    opacity: 0 !important;
+    transform: translateX(-20px) !important;
+    transition: all 0.4s ease !important;
+  }
+
+  .sidebar.active .nav-item {
+    opacity: 1 !important;
+    transform: translateX(0) !important;
+  }
+
+  /* Staggered animation for menu items */
+  .sidebar.active .nav-item:nth-child(1) { transition-delay: 0.1s; }
+  .sidebar.active .nav-item:nth-child(2) { transition-delay: 0.15s; }
+  .sidebar.active .nav-item:nth-child(3) { transition-delay: 0.2s; }
+  .sidebar.active .nav-item:nth-child(4) { transition-delay: 0.25s; }
+  .sidebar.active .nav-item:nth-child(5) { transition-delay: 0.3s; }
+  .sidebar.active .nav-item:nth-child(6) { transition-delay: 0.35s; }
+  .sidebar.active .nav-item:nth-child(7) { transition-delay: 0.4s; }
+  .sidebar.active .nav-item:nth-child(8) { transition-delay: 0.45s; }
+  .sidebar.active .nav-item:nth-child(9) { transition-delay: 0.5s; }
+
+  .main { padding: 20px 16px !important; }
+  .header { margin-bottom: 24px; text-align: center; }
+  .header h1 { font-size: 28px; line-height: 1.2; width: 100%; }
+  .header p { font-size: 15px; margin: 0 auto; width: 100%; }
+
+  .header-flex {
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 16px !important;
+    text-align: center;
+  }
+
+  .header-content {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .header-right {
+    width: 100% !important;
+    padding-top: 0 !important;
     display: flex;
+    justify-content: center;
   }
 
-  .sidebar {
-    position: fixed;
-    left: -280px; /* Hide completely */
-    top: 0;
-    bottom: 0;
-    width: 280px;
-    height: 100vh;
-    z-index: 999;
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 20px 0 50px rgba(0,0,0,0.3);
+  .action-trigger-btn {
+    width: 100% !important;
+    justify-content: center !important;
+    max-width: 400px;
   }
 
-  .sidebar.active {
-    transform: translateX(280px);
-  }
-
-  .main {
-    padding: 24px 16px;
-  }
-
-  .header h1 {
-    font-size: 32px;
-  }
-
-  .stats-grid {
-    grid-template-columns: 1fr;
-    gap: 16px;
-  }
-
-  .dash-grid {
+  .stats-grid, .dash-grid, .cards {
     grid-template-columns: 1fr !important;
     gap: 16px;
   }
 
-  .cards {
-    grid-template-columns: 1fr;
-    gap: 20px;
-  }
-
-  .card {
-    padding: 24px;
-  }
-
-  .trend-bars {
-    gap: 4px;
-    height: 140px;
-  }
-
-  .trend-labels {
-    gap: 4px;
-  }
-
-  .summary-grid {
-    grid-template-columns: 1fr;
-    gap: 12px;
-  }
-
-  /* Table responsiveness */
-  .table-premium, .report-table, .data-table {
+  /* Table Responsiveness */
+  .table-premium, .report-table, .data-table, .locations-table, .sales-table, .usedcar-table, .history-table, .table-wrapper table {
     display: block;
     width: 100%;
     overflow-x: auto;
     white-space: nowrap;
     -webkit-overflow-scrolling: touch;
+    border-radius: 12px;
   }
+}
 
-  /* Full view container adjustments */
-  .app.sidebar-hidden .main {
-    padding: 24px 16px;
-  }
-
-  .view-header {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 16px;
-  }
-
-  .view-title h2 {
-    font-size: 28px;
-  }
-
-  .view-filters-bar {
-    padding: 16px;
-  }
-
-  .filter-section {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-  }
-
-  .view-period-selector, .view-module-tabs {
-    flex-wrap: wrap;
-  }
-
-  .view-table-container {
-    padding: 12px;
-    border-radius: 20px;
-  }
+/* --- 480px - Extra Small Devices --- */
+@media (max-width: 480px) {
+  .header h1 { font-size: 24px; }
+  .card, .dash-card { padding: 20px 16px; border-radius: 20px; }
 }

@@ -375,14 +375,17 @@ async function loadServiceRecords() {
     updateServiceReportCards(allServiceItems);
     renderServiceRows(filterServiceItems(activeReportType));
     
-    // Initialize filter tabs - set first tab as active
+    // Maintain active filter tab based on activeReportType
     document.querySelectorAll(".filter-tab").forEach((btn, idx) => {
-      if (idx === 0) {
-        btn.classList.add("active");
-      } else {
-        btn.classList.remove("active");
-      }
+      btn.classList.remove("active");
     });
+    if (activeReportType === "estimate") {
+      document.querySelectorAll(".filter-tab")[1].classList.add("active");
+    } else if (activeReportType === "appointment") {
+      document.querySelectorAll(".filter-tab")[2].classList.add("active");
+    } else {
+      document.querySelectorAll(".filter-tab")[0].classList.add("active");
+    }
     setActiveRangeButton(serviceRangeMode);
     setVisibleRangePanel(serviceRangeMode);
   } catch (error) {
@@ -397,13 +400,19 @@ async function loadServiceRecords() {
   }
 }
 
-async function uploadServiceFile(event) {
+let currentPreviewType = 'forecast';
+
+async function uploadServiceFileByType(event, type) {
   if (event) event.preventDefault();
   
-  const type = document.getElementById('serviceTemplateType').value;
-  const fileInput = document.getElementById('fileServiceUpload');
-  const statusEl = document.getElementById('statusServiceUpload');
-  const btn = document.getElementById('btnServiceUpload');
+  const formId = type === 'forecast' ? 'formServiceForecast' : 'formServiceROBills';
+  const fileInputId = type === 'forecast' ? 'fileServiceForecast' : 'fileServiceROBills';
+  const statusElId = type === 'forecast' ? 'statusServiceForecast' : 'statusServiceROBills';
+  const btnId = type === 'forecast' ? 'btnServiceForecast' : 'btnServiceROBills';
+
+  const fileInput = document.getElementById(fileInputId);
+  const statusEl = document.getElementById(statusElId);
+  const btn = document.getElementById(btnId);
   
   if (!fileInput.files.length) {
     statusEl.innerHTML = '<span style="color:#ef4444; background:#fef2f2; padding:8px 12px; border-radius:6px; display:inline-block;">⚠️ Please select a file to upload.</span>';
@@ -429,7 +438,7 @@ async function uploadServiceFile(event) {
     if (!res.ok) throw new Error(data.detail || 'Upload failed');
     
     statusEl.innerHTML = `<span style="color:#059669; background:#f0fdf4; padding:8px 12px; border-radius:6px; display:inline-block;">✅ ${data.message}</span>`;
-    document.getElementById('formServiceUpload').reset();
+    document.getElementById(formId).reset();
     
     if (type === 'robillscube') {
         loadServiceRecords();
@@ -443,30 +452,23 @@ async function uploadServiceFile(event) {
   }
 }
 
-function downloadServiceTemplate(event) {
+function downloadServiceTemplateByType(event, type) {
   if (event) event.preventDefault();
-  const type = document.getElementById('serviceTemplateType').value;
   const timestamp = new Date().getTime();
   const endpoint = type === 'forecast' ? 'template/forecast' : 'template/robillscube';
   window.open(`${API}/service/${endpoint}?t=${timestamp}`, '_blank');
 }
 
-function updateServiceTemplateLink() {
-    const statusEl = document.getElementById('statusServiceUpload');
-    if (statusEl) statusEl.innerHTML = '';
-}
-
 window.addEventListener("DOMContentLoaded", loadServiceRecords);
-window.downloadServiceTemplate = downloadServiceTemplate;
-window.uploadServiceFile = uploadServiceFile;
-window.updateServiceTemplateLink = updateServiceTemplateLink;
+window.downloadServiceTemplateByType = downloadServiceTemplateByType;
+window.uploadServiceFileByType = uploadServiceFileByType;
 
 // ---------- SERVICE PREVIEW MODAL ----------
 let servicePreviewPage = 1;
 const SERVICE_PREVIEW_PAGE_SIZE = 10;
 
-function openServicePreview() {
-  const type = document.getElementById('serviceTemplateType').value;
+function openServicePreviewByType(type) {
+  currentPreviewType = type;
   servicePreviewPage = 1;
 
   const modal = document.getElementById('servicePreviewModal');
@@ -594,5 +596,5 @@ document.getElementById('servicePreviewModal').addEventListener('click', functio
   if (e.target === this) closeServicePreview();
 });
 
-window.openServicePreview = openServicePreview;
+window.openServicePreviewByType = openServicePreviewByType;
 window.closeServicePreview = closeServicePreview;

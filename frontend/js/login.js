@@ -3,6 +3,23 @@ const registerForm = document.getElementById('registerForm');
 const loginTab = document.getElementById('loginTab');
 const registerTab = document.getElementById('registerTab');
 
+// ── Helper: show inline message ──────────────────────────────────────────────
+function showMessage(elementId, message, type = 'error') {
+  const el = document.getElementById(elementId);
+  if (!el) return;
+  el.textContent = message;
+  el.className = `form-message ${type}`;
+  el.classList.remove('hidden');
+}
+
+function clearMessage(elementId) {
+  const el = document.getElementById(elementId);
+  if (!el) return;
+  el.textContent = '';
+  el.className = 'form-message hidden';
+}
+// ─────────────────────────────────────────────────────────────────────────────
+
 loginTab.addEventListener('click', () => {
   loginTab.classList.add('active');
   registerTab.classList.remove('active');
@@ -19,14 +36,20 @@ registerTab.addEventListener('click', () => {
 
 loginForm.addEventListener('submit', async function(event) {
   event.preventDefault();
+  clearMessage('loginError');
 
   const email = document.getElementById('email').value.trim();
   const password = document.getElementById('password').value.trim();
+  const btn = loginForm.querySelector('.btn-submit');
 
   if (!email || !password) {
-    alert('Please enter both email and password.');
+    showMessage('loginError', 'Please enter both email and password.');
     return;
   }
+
+  const originalText = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = 'Signing In...';
 
   try {
     const response = await fetch(`${API}/auth/login`, {
@@ -43,23 +66,32 @@ loginForm.addEventListener('submit', async function(event) {
       window.location.href = 'index.html';
     } else {
       const error = await response.json();
-      alert(error.detail || 'Login failed');
+      showMessage('loginError', error.detail || 'Login failed. Please check your credentials.');
     }
   } catch (error) {
-    alert('Network error: ' + (error.message || error));
+    showMessage('loginError', 'Network error: ' + (error.message || error));
+  } finally {
+    btn.disabled = false;
+    btn.textContent = originalText;
   }
 });
 
 registerForm.addEventListener('submit', async function(event) {
   event.preventDefault();
+  clearMessage('registerMessage');
 
   const email = document.getElementById('regEmail').value.trim();
   const password = document.getElementById('regPassword').value.trim();
+  const btn = registerForm.querySelector('.btn-submit');
 
   if (!email || !password) {
-    alert('Please enter both email and password.');
+    showMessage('registerMessage', 'Please enter both email and password.');
     return;
   }
+
+  const originalText = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = 'Registering...';
 
   try {
     const response = await fetch(`${API}/auth/register`, {
@@ -71,13 +103,19 @@ registerForm.addEventListener('submit', async function(event) {
     });
 
     if (response.ok) {
-      alert('Registration successful. Please login.');
-      loginTab.click(); // Switch to login
+      showMessage('registerMessage', 'Registration successful! Redirecting to login…', 'success');
+      setTimeout(() => {
+        loginTab.click(); // Switch to login tab
+        clearMessage('registerMessage');
+      }, 2000);
     } else {
       const error = await response.json();
-      alert(error.detail || 'Registration failed');
+      showMessage('registerMessage', error.detail || 'Registration failed.');
     }
   } catch (error) {
-    alert('Network error: ' + (error.message || error));
+    showMessage('registerMessage', 'Network error: ' + (error.message || error));
+  } finally {
+    btn.disabled = false;
+    btn.textContent = originalText;
   }
 });

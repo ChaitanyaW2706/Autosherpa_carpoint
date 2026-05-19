@@ -208,3 +208,4 @@
 .leads-table tbody tr:hover { background: #f0f7ff; }
 .empty-state { text-align: center; padding: 60px 20px; color: #6b7280; }
 .empty-state p { font-size: 16px; margin: 0; }
+@media (max-width: 768px) { .header { margin-bottom: 24px; } .card { padding: 16px; } .table-wrapper table { min-width: 600px; } .form-actions { flex-direction: column; } .form-actions button { width: 100%; } }

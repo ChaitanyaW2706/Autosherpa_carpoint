@@ -3,6 +3,11 @@ from db import get_db
 
 router = APIRouter()
 
+LOCATIONS_COLUMNS = [
+    "location_name", "address", "phone", "email", "hours", 
+    "latitude", "longitude", "map_url", "status", "module"
+]
+
 @router.post("/locations")
 def create_location(item: dict = Body(...)):
     """Create a new location/contact point"""
@@ -12,8 +17,8 @@ def create_location(item: dict = Body(...)):
         cur.execute(
             """
             INSERT INTO dealer_locations
-            (`location_name`, `address`, `phone`, `email`, `hours`, `latitude`, `longitude`, `map_url`, `status`, `created_at`)
-            VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,NOW())
+            (`location_name`, `address`, `phone`, `email`, `hours`, `latitude`, `longitude`, `map_url`, `status`, `module`, `created_at`)
+            VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,NOW())
             """,
             (
                 item.get("location_name"),
@@ -25,6 +30,7 @@ def create_location(item: dict = Body(...)):
                 item.get("longitude"),
                 item.get("map_url"),
                 item.get("status", "active"),
+                item.get("module", "All"),
             )
         )
         db.commit()
@@ -86,7 +92,8 @@ def update_location(location_id: int, item: dict = Body(...)):
                 latitude=%s,
                 longitude=%s,
                 map_url=%s,
-                status=%s
+                status=%s,
+                module=%s
             WHERE id=%s
             """,
             (
@@ -99,6 +106,7 @@ def update_location(location_id: int, item: dict = Body(...)):
                 preserve("longitude"),
                 preserve("map_url"),
                 preserve("status"),
+                preserve("module"),
                 location_id,
             )
         )

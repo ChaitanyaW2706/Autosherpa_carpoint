@@ -116,6 +116,19 @@ function getImageSrc(base64Data) {
   if (!base64Data) return null;
   let value = base64Data.trim();
   if (value.startsWith("data:")) return value;
+  if (value.startsWith("[")) {
+    try {
+      const arr = JSON.parse(value);
+      if (Array.isArray(arr) && arr.length > 0) {
+        value = String(arr[0]).trim();
+        if (value.startsWith("data:")) return value;
+      } else {
+        return null;
+      }
+    } catch (e) {
+      // ignore and fall through
+    }
+  }
   const clean = value.replace(/\s/g, "");
   if (clean.length <= 10) return null;
   const base64Only = clean.replace(/\r|\n|\t/g, "").split(",").pop();
@@ -240,7 +253,7 @@ async function loadCarImageById(carId) {
     const imgEl = document.getElementById(`car-img-${carId}`);
     const placeholderEl = document.getElementById(`car-img-placeholder-${carId}`);
     if (imgEl) {
-      const src = getImageSrc(data.car_image_base64);
+      const src = extractCarImage({ car_image_base64: data.car_image_base64 });
       if (src) {
         imgEl.src = src;
         imgEl.style.display = "";

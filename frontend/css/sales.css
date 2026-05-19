@@ -57,31 +57,11 @@ body {
 }
 
 /* Sidebar */
-.sidebar {
-  width: 260px;
-  background: linear-gradient(180deg, #004aad 0%, #0052cc 50%, #003d99 100%);
-  color: #ffffff;
-  padding: 32px 20px;
-  position: sticky;
-  top: 0;
-  height: 100vh;
-  overflow-y: auto;
-  box-shadow: 4px 0 35px -15px rgba(0, 82, 204, 0.35);
-  z-index: 10;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-}
+/* Sidebar removed for global consistency */
 
-.brand {
-  margin-bottom: 40px;
-}
+/* Shared component removed */
 
-.logo {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
+/* Shared component removed */
 
 .logo-icon {
   width: 44px;
@@ -111,25 +91,9 @@ body {
   margin-top: 4px;
 }
 
-.nav {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
+/* Shared component removed */
 
-.nav-item {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 14px 16px;
-  border-radius: 18px;
-  text-decoration: none;
-  color: rgba(255, 255, 255, 0.95);
-  transition: all 0.25s ease;
-  position: relative;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid transparent;
-}
+/* Shared component removed */
 
 .nav-icon {
   width: 36px;
@@ -1033,9 +997,7 @@ button.toggle-btn.primary {
     grid-template-columns: 1fr;
   }
 
-  .sidebar {
-    display: none;
-  }
+  /* Sidebar removed for global consistency */
 
   .main {
     padding: 20px 16px;
@@ -2443,4 +2405,4 @@ button.toggle-btn.primary {
 .upload-btn:hover {
   background: #0052cc;
   color: white;
-}
+}@media (max-width: 768px) { .sales-top-grid { flex-direction: column; align-items: stretch; } .grid-form { grid-template-columns: 1fr; } .cars-grid { grid-template-columns: 1fr; } .filter-bar { flex-direction: column; } .filter-group { width: 100%; } .filter-actions-row { flex-direction: column; align-items: stretch; } .filter-btns { justify-content: center; } .car-card { max-width: 100%; } }

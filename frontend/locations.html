@@ -16,7 +16,7 @@
     <header class="mobile-header">
       <button class="menu-toggle" id="menuToggle">☰</button>
       <div class="mobile-brand">AutoSherpa</div>
-      <div style="width: 24px;"></div> <!-- Spacer -->
+      <div style="width: 40px;"></div> <!-- Spacer -->
     </header>
 
     <aside class="sidebar">
@@ -86,14 +86,31 @@
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
           <div>
             <h3 style="margin:0;">All Locations</h3>
-            <p class="small-text" style="margin:8px 0 0;">All locations shown by the chatbot</p>
+            <p class="small-text" style="margin:8px 0 0;">Manage dealer showroom addresses and service points.</p>
           </div>
           <button class="btn-add" onclick="openAddLocationModal()">+ Add Location</button>
         </div>
       </div>
 
-      <div id="locationsContainer" style="margin-top: 20px;">
-        <div style="text-align: center; color: #64748b; padding: 40px;">Loading locations...</div>
+      <div id="locationsContainer" class="table-container">
+        <table class="locations-table">
+          <thead>
+            <tr>
+              <th>Location Name</th>
+              <th>Address</th>
+              <th>Contact Info</th>
+              <th>Hours</th>
+              <th>Module</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="locationsBody">
+            <tr>
+              <td colspan="7" style="text-align: center; color: #64748b; padding: 40px;">Loading locations...</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
 
       <!-- Add/Edit Location Modal -->
@@ -105,6 +122,15 @@
           </div>
           <input type="hidden" id="locationId">
           <div class="form-grid">
+            <select id="module" style="width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 12px; grid-column: 1 / -1; background: #f0f7ff; font-weight: 600;">
+              <option value="" disabled selected>Select Module (e.g., New Car, Used Car)...</option>
+              <option value="All">All Modules</option>
+              <option value="New Car">New Car</option>
+              <option value="Used Car">Used Car</option>
+              <option value="Service">Service</option>
+              <option value="Insurance">Insurance</option>
+              <option value="Refinancing">Refinancing</option>
+            </select>
             <input id="locationName" placeholder="Location Name (e.g., Main Showroom)">
             <input id="address" placeholder="Address">
             <input id="phone" placeholder="Phone Number">
@@ -129,6 +155,6 @@
 
   <script src="js/config.js?v=1.2"></script>
   <script src="js/locations.js"></script>
-<script src="js/mobile.js"></script>
+
 </body>
 </html>
