@@ -5,6 +5,8 @@ let filteredCarsData = [];
 let currentAction = null;
 let currentCarId = null;
 let currentItemId = null;
+let currentPage = 0;
+const PAGE_SIZE = 51;
 
 // -------------------- HELPERS --------------------
 function handleError(res) {
@@ -115,12 +117,18 @@ function getTags(type) {
 function getImageSrc(base64Data) {
   if (!base64Data) return null;
   let value = base64Data.trim();
+  
+  if (value.startsWith("http://") || value.startsWith("https://")) return value;
+  if (value.startsWith("/")) return API + value;
+  
   if (value.startsWith("data:")) return value;
   if (value.startsWith("[")) {
     try {
       const arr = JSON.parse(value);
       if (Array.isArray(arr) && arr.length > 0) {
         value = String(arr[0]).trim();
+        if (value.startsWith("http://") || value.startsWith("https://")) return value;
+        if (value.startsWith("/")) return API + value;
         if (value.startsWith("data:")) return value;
       } else {
         return null;
@@ -204,7 +212,24 @@ function serializeCarImages(images) {
 }
 
 // -------------------- LOAD ALL CARS (FAST: meta first, images lazy) --------------------
-async function loadAllCars() {
+async function loadAllCars(page = 0) {
+  currentPage = page;
+  const skip = page * PAGE_SIZE;
+  const limit = PAGE_SIZE;
+
+  const search = (document.getElementById("carSearch")?.value || "").trim();
+  const brand = (document.getElementById("brandFilter")?.value || "").trim();
+  const fuel = (document.getElementById("fuelFilter")?.value || "").trim();
+  const model = (document.getElementById("modelFilter")?.value || "").trim();
+  const type = (document.getElementById("typeFilter")?.value || "").trim();
+
+  let query = `?skip=${skip}&limit=${limit}`;
+  if (search) query += `&search=${encodeURIComponent(search)}`;
+  if (brand) query += `&brand=${encodeURIComponent(brand)}`;
+  if (fuel) query += `&fuel=${encodeURIComponent(fuel)}`;
+  if (model) query += `&model=${encodeURIComponent(model)}`;
+  if (type) query += `&type=${encodeURIComponent(type)}`;
+
   const grid = document.getElementById("carsGrid");
   const loading = document.getElementById("carsLoading");
   const empty = document.getElementById("carsEmpty");
@@ -213,22 +238,63 @@ async function loadAllCars() {
   loading.classList.remove("hidden");
   empty.classList.add("hidden");
   try {
-    // Step 1: Fetch metadata only (no images) - very fast
-    const res = await fetch(API + "/sales/cars-meta");
+    const res = await fetch(API + "/sales/cars-meta" + query);
     if (!res.ok) throw new Error(await res.text());
-    const cars = await res.json();
-    allCarsData = cars || [];
+    const data = await res.json();
+    const cars = data.items || [];
+    
+    allCarsData = cars;
     filteredCarsData = [...allCarsData];
     loading.classList.add("hidden");
-    populateFilterDropdowns(allCarsData);
-    renderCarsGrid(allCarsData);
-    // Step 2: Lazy load images in background after cards are visible
-    lazyLoadCarImages(allCarsData);
+    
+    renderCarsGrid(cars, data.total);
+    renderSalesCharts(cars);
+    renderPagination(data.total);
+    
+    // Step 2: Lazy load images
+    lazyLoadCarImages(cars);
   } catch (e) {
     console.error("Load cars error:", e);
     loading.classList.add("hidden");
     grid.innerHTML = `<div style="text-align:center;padding:40px;">⚠️ Error: ${escapeHtml(e.message)}</div>`;
   }
+}
+
+function renderPagination(totalCount) {
+  let paginationEl = document.getElementById("carsPagination");
+  if (!paginationEl) {
+    // Create it if it doesn't exist below carsGrid
+    paginationEl = document.createElement("div");
+    paginationEl.id = "carsPagination";
+    paginationEl.className = "pagination-container";
+    const grid = document.getElementById("carsGrid");
+    grid.parentNode.insertBefore(paginationEl, grid.nextSibling);
+  }
+  
+  paginationEl.innerHTML = "";
+  const totalPages = Math.ceil(totalCount / PAGE_SIZE);
+  
+  if (totalPages <= 1) return;
+  
+  const prevBtn = document.createElement("button");
+  prevBtn.className = "pagination-btn";
+  prevBtn.textContent = "Previous";
+  prevBtn.disabled = currentPage === 0;
+  prevBtn.onclick = () => loadAllCars(currentPage - 1);
+  
+  const info = document.createElement("span");
+  info.className = "pagination-info";
+  info.textContent = ` Page ${currentPage + 1} of ${totalPages} `;
+  
+  const nextBtn = document.createElement("button");
+  nextBtn.className = "pagination-btn";
+  nextBtn.textContent = "Next";
+  nextBtn.disabled = currentPage >= totalPages - 1;
+  nextBtn.onclick = () => loadAllCars(currentPage + 1);
+  
+  paginationEl.appendChild(prevBtn);
+  paginationEl.appendChild(info);
+  paginationEl.appendChild(nextBtn);
 }
 
 // Lazy load images for each car in background (batched to avoid overload)
@@ -282,41 +348,31 @@ function populateFilterDropdowns(cars) {
   if (typeSel) typeSel.innerHTML = '<option value="">All Types</option>' + types.map(t => `<option>${escapeHtml(t)}</option>`).join("");
 }
 
-function renderCarsGrid(cars) {
+function renderCarsGrid(cars, totalCount = null) {
   const grid = document.getElementById("carsGrid");
   const empty = document.getElementById("carsEmpty");
   const countEl = document.getElementById("carsCount");
   grid.innerHTML = "";
-  if (countEl) countEl.textContent = `Showing ${cars.length} of ${allCarsData.length} cars`;
+  if (countEl) {
+    const start = currentPage * PAGE_SIZE + 1;
+    const end = start + cars.length - 1;
+    countEl.textContent = totalCount !== null 
+      ? `${start}-${end} cars (Total-${totalCount})`
+      : `${start}-${end} cars`;
+  }
   if (!cars.length) { empty.classList.remove("hidden"); return; }
   empty.classList.add("hidden");
   for (const car of cars) grid.appendChild(createCarCard(car));
 }
 
 function filterCars() {
-  const search = (document.getElementById("carSearch")?.value || "").toLowerCase();
-  const brand = (document.getElementById("brandFilter")?.value || "").toLowerCase();
-  const fuel = (document.getElementById("fuelFilter")?.value || "").toLowerCase();
-  const model = (document.getElementById("modelFilter")?.value || "").toLowerCase();
-  const type = (document.getElementById("typeFilter")?.value || "").toLowerCase();
-
-  const filtered = allCarsData.filter(car => {
-    const matchSearch = !search || (car.make + " " + car.model + " " + car.variant).toLowerCase().includes(search);
-    const matchBrand = !brand || (car.make || "").toLowerCase() === brand;
-    const matchModel = !model || (car.model || "").toLowerCase() === model;
-    const matchType = !type || (car.type_name || "").toLowerCase() === type;
-    const matchFuel = !fuel || (car.fuels || []).some(f => (f.fuel_type || "").toLowerCase() === fuel);
-    return matchSearch && matchBrand && matchModel && matchType && matchFuel;
-  });
-  filteredCarsData = filtered;
-  renderCarsGrid(filtered);
+  loadAllCars(0); // Trigger server-side filtering and reset to page 0
 }
 
 function resetCarFilters() {
   const ids = ["carSearch", "brandFilter", "fuelFilter", "modelFilter", "typeFilter"];
   ids.forEach(id => { const el = document.getElementById(id); if (el) el.value = ""; });
-  filteredCarsData = [...allCarsData];
-  renderCarsGrid(allCarsData);
+  loadAllCars(0);
 }
 
 function exportCSV() {
@@ -335,7 +391,7 @@ function exportCSV() {
     return matchSearch && matchBrand && matchModel && matchType && matchFuel;
   });
 
-  if (!filtered.length) return alert("No cars to export matching current filters");
+  if (!filtered.length) return showToast("No cars to export matching current filters");
 
   console.log(`Exporting ${filtered.length} cars...`);
   const h = ["ID", "Make", "Model", "Variant", "Mileage", "Price Base", "Price Top", "Fuel", "Trans", "Color"];
@@ -397,6 +453,147 @@ function createCarCard(car) {
   return card;
 }
 
+// -------------------- CHARTS --------------------
+let brandChartInst = null;
+let priceChartInst = null;
+let fuelChartInst = null;
+
+function normalizeString(str) {
+  if (!str) return 'Unknown';
+  const s = String(str).trim().toLowerCase();
+  if (!s) return 'Unknown';
+  if (s === 'cng') return 'CNG';
+  if (s === 'ev' || s === 'electric') return 'Electric';
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+function normalizeBrand(brand) {
+  if (!brand) return 'Unknown';
+  let b = brand.trim().toLowerCase();
+  
+  if (b.includes('mahindra') || b.includes('mahindhra')) return 'Mahindra';
+  if (b.includes('hyundai')) return 'Hyundai';
+  if (b.includes('maruti') || b.includes('suzuki')) return 'Maruti Suzuki';
+  if (b.includes('tata')) return 'Tata';
+  if (b.includes('honda')) return 'Honda';
+  if (b.includes('toyota')) return 'Toyota';
+  if (b.includes('kia')) return 'Kia';
+  if (b.includes('mg') || b.includes('morris garages')) return 'MG';
+  if (b.includes('volkswagen') || b.includes('vw')) return 'Volkswagen';
+  if (b.includes('renault')) return 'Renault';
+  if (b.includes('nissan')) return 'Nissan';
+  if (b.includes('skoda')) return 'Skoda';
+  if (b.includes('ford')) return 'Ford';
+  if (b.includes('jeep')) return 'Jeep';
+  
+  return b.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+}
+
+function renderSalesCharts(cars) {
+  const chartsCard = document.getElementById('salesChartsCard');
+  if (!chartsCard) return;
+  if (!cars || cars.length === 0) {
+    chartsCard.innerHTML = '<div style="padding: 24px; text-align: center; color: #64748b; background: white; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">No data available for charts based on current filters.</div>';
+    chartsCard.style.display = 'block';
+    return;
+  }
+  
+  // Re-render the container if it was previously set to empty state
+  if (chartsCard.innerHTML.includes('No data available')) {
+    chartsCard.innerHTML = `
+      <div class="chart-grid">
+        <div class="chart-container">
+          <h4>Brand Share</h4>
+          <canvas id="brandPieChart"></canvas>
+        </div>
+        <div class="chart-container">
+          <h4>Average Base Price by Brand</h4>
+          <canvas id="priceBarChart"></canvas>
+        </div>
+        <div class="chart-container">
+          <h4>Fuel Type Distribution</h4>
+          <canvas id="fuelDoughnutChart"></canvas>
+        </div>
+      </div>
+    `;
+  }
+
+  chartsCard.style.display = 'block';
+
+  const brandCount = {};
+  const brandPriceTotal = {};
+  const brandPriceCount = {};
+  const fuelCount = {};
+
+  cars.forEach(car => {
+    const make = normalizeBrand(car.make);
+    brandCount[make] = (brandCount[make] || 0) + 1;
+    
+    if (car.ex_showroom_price_base) {
+      brandPriceTotal[make] = (brandPriceTotal[make] || 0) + car.ex_showroom_price_base;
+      brandPriceCount[make] = (brandPriceCount[make] || 0) + 1;
+    }
+
+    if (car.fuels && car.fuels.length > 0) {
+      car.fuels.forEach(f => {
+        const ft = normalizeString(f.fuel_type);
+        fuelCount[ft] = (fuelCount[ft] || 0) + 1;
+      });
+    }
+  });
+
+  const commonColors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316', '#64748b', '#06b6d4'];
+
+  const brandLabels = Object.keys(brandCount);
+  const brandData = Object.values(brandCount);
+  if (brandChartInst) brandChartInst.destroy();
+  brandChartInst = new Chart(document.getElementById('brandPieChart'), {
+    type: 'pie',
+    data: { labels: brandLabels, datasets: [{ data: brandData, backgroundColor: commonColors, borderWidth: 1 }] },
+    options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+  });
+
+  const priceLabels = Object.keys(brandPriceTotal);
+  const priceData = priceLabels.map(make => Math.round(brandPriceTotal[make] / brandPriceCount[make]));
+  if (priceChartInst) priceChartInst.destroy();
+  priceChartInst = new Chart(document.getElementById('priceBarChart'), {
+    type: 'bar',
+    data: { labels: priceLabels, datasets: [{ label: 'Avg Base Price (₹)', data: priceData, backgroundColor: commonColors, borderRadius: 4 }] },
+    options: { responsive: true, scales: { y: { beginAtZero: true } }, plugins: { legend: { display: false } } }
+  });
+
+  const fuelLabels = Object.keys(fuelCount);
+  const fuelData = Object.values(fuelCount);
+  if (fuelChartInst) fuelChartInst.destroy();
+  fuelChartInst = new Chart(document.getElementById('fuelDoughnutChart'), {
+    type: 'doughnut',
+    data: { labels: fuelLabels, datasets: [{ data: fuelData, backgroundColor: commonColors, borderWidth: 1 }] },
+    options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+  });
+}
+
+function switchSalesView(view) {
+  const inventoryView = document.getElementById('inventoryView');
+  const reportsView = document.getElementById('reportsView');
+  const tabInventory = document.getElementById('tabInventory');
+  const tabReports = document.getElementById('tabReports');
+
+  if (!inventoryView || !reportsView) return;
+
+  if (view === 'inventory') {
+    inventoryView.style.display = 'block';
+    reportsView.style.display = 'none';
+    if(tabInventory) tabInventory.classList.add('active');
+    if(tabReports) tabReports.classList.remove('active');
+  } else if (view === 'reports') {
+    inventoryView.style.display = 'none';
+    reportsView.style.display = 'block';
+    if(tabInventory) tabInventory.classList.remove('active');
+    if(tabReports) tabReports.classList.add('active');
+    renderSalesCharts(filteredCarsData);
+  }
+}
+
 // -------------------- MODALS & CRUD --------------------
 async function addCar() {
   try {
@@ -405,10 +602,10 @@ async function addCar() {
     const variant = document.getElementById("variant")?.value.trim();
     const typeId = document.getElementById("carType")?.value;
     const customType = document.getElementById("newCarType")?.value.trim();
-    if (!make || !model || !variant || (!typeId && !customType)) return alert("Fill required fields");
-    if (typeId === "_new_type_" && !customType) return alert("Enter new car type name.");
+    if (!make || !model || !variant || (!typeId && !customType)) return showToast("Fill required fields");
+    if (typeId === "_new_type_" && !customType) return showToast("Enter new car type name.");
     const imageFiles = Array.from(document.getElementById("carImages")?.files || []);
-    if (imageFiles.length > 5) return alert("Please upload up to 5 images only.");
+    if (imageFiles.length > 5) return showToast("Please upload up to 5 images only.");
     const pdfFile = document.getElementById("brochurePdf")?.files?.[0];
     const imageBase64s = imageFiles.length ? await Promise.all(imageFiles.map(fileToBase64)) : [];
     const pdfBase64 = pdfFile ? await fileToBase64(pdfFile) : null;
@@ -429,9 +626,9 @@ async function addCar() {
     console.debug("Uploading new car payload", body, "API", API);
     const res = await fetch(API + "/sales/cars", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
     if (!res.ok) throw new Error((await res.json()).detail || "Error");
-    alert("Car added");
+    showToast("Car added");
     toggleAddCarForm(); loadAllCars();
-  } catch (err) { alert("Error: " + err.message); }
+  } catch (err) { showToast("Error: " + err.message); }
 }
 
 async function deleteCar(id) {
@@ -440,7 +637,7 @@ async function deleteCar(id) {
     const res = await fetch(`${API}/sales/cars/${id}`, { method: "DELETE" });
     if (!res.ok) throw new Error(await res.text());
     loadAllCars();
-  } catch (e) { alert("Delete failed: " + e.message); }
+  } catch (e) { showToast("Delete failed: " + e.message); }
 }
 
 function displaySalesCarImageView(elementId, imageData, viewName) {
@@ -549,7 +746,7 @@ function removeEditTag(type, idx) {
 async function previewEditImage(input) {
   const files = Array.from(input.files || []);
   if (!files.length) return;
-  if (files.length > 5) return alert("Please upload up to 5 images only.");
+  if (files.length > 5) return showToast("Please upload up to 5 images only.");
   const results = await Promise.all(files.map(fileToBase64));
   editNewImageBase64 = results;
   const first = results[0] ? getImageSrc(results[0]) : null;
@@ -633,8 +830,8 @@ async function saveEditCar() {
     if (editNewImageBase64) body.car_images_base64 = editNewImageBase64;
     if (brochureBase64) body.brochure_pdf_base64 = brochureBase64;
     await fetch(`${API}/sales/cars/${carId}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
-    alert("Updated!"); closeEditModal(); loadAllCars();
-  } catch (e) { alert("Error: " + e.message); }
+    showToast("Updated!"); closeEditModal(); loadAllCars();
+  } catch (e) { showToast("Error: " + e.message); }
 }
 
 // -------------------- EXCEL UPLOAD --------------------
@@ -654,14 +851,14 @@ function downloadSalesTemplate() {
 function handleSalesFileSelect(e) { selectedSalesFile = e.target.files[0]; const fileNameEl = document.getElementById('salesFileName'); if (fileNameEl) fileNameEl.innerHTML = `Selected: ${selectedSalesFile.name}`; }
 function handleSalesDrop(e) { e.preventDefault(); selectedSalesFile = e.dataTransfer.files[0]; const fileNameEl = document.getElementById('salesFileName'); if (fileNameEl) fileNameEl.innerHTML = `Selected: ${selectedSalesFile.name}`; }
 async function uploadSalesFile() {
-  if (!selectedSalesFile) return alert('Please select a file first!');
+  if (!selectedSalesFile) return showToast('Please select a file first!');
   const formData = new FormData(); formData.append('file', selectedSalesFile);
   const btn = document.getElementById('btnSalesUpload');
   if (btn) { btn.disabled = true; btn.innerHTML = 'Uploading...'; }
   try {
     const res = await fetch(`${API}/sales/bulk-upload-cars`, { method: 'POST', body: formData });
-    if (res.ok) { alert('Success!'); toggleUploadInventory(); loadAllCars(); } else alert('Failed!');
-  } catch (e) { alert('Error: ' + e.message); }
+    if (res.ok) { showToast('Success!'); toggleUploadInventory(); loadAllCars(); } else showToast('Failed!');
+  } catch (e) { showToast('Error: ' + e.message); }
   finally { if (btn) { btn.disabled = false; btn.innerHTML = 'Upload'; } }
 }
 
@@ -707,5 +904,5 @@ window.previewEditImage = previewEditImage; window.toggleAddCarForm = toggleAddC
 window.filterCars = filterCars; window.resetCarFilters = resetCarFilters; window.exportCSV = exportCSV;
 window.toggleUploadInventory = toggleUploadInventory; window.downloadSalesTemplate = downloadSalesTemplate;
 window.handleSalesFileSelect = handleSalesFileSelect; window.handleSalesDrop = handleSalesDrop; window.uploadSalesFile = uploadSalesFile;
-window.addTag = addTag; window.removeTag = removeTag;
 window.lazyLoadCarImages = lazyLoadCarImages; window.loadCarImageById = loadCarImageById;
+window.switchSalesView = switchSalesView;

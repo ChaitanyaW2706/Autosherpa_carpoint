@@ -341,6 +341,7 @@ def get_stats(period: Optional[str] = Query("today", description="today|yesterda
     }
     
     # Process main period docs - count UNIQUE users per module
+    unique_users_overall = set()
     for doc in docs:
         phone = (doc.get("user_phone") or "").strip()
         if not phone:
@@ -350,6 +351,7 @@ def get_stats(period: Optional[str] = Query("today", description="today|yesterda
         if module not in categories:
             module = "general"
         categories[module].add(phone)
+        unique_users_overall.add(phone)
     
     # Process trend data
     trend_cache = {}
@@ -379,7 +381,7 @@ def get_stats(period: Optional[str] = Query("today", description="today|yesterda
     by_module = {k: len(v) for k, v in categories.items()}
     
     # Calculate total unique users for the period
-    total_unique_users = sum(by_module.values())
+    total_unique_users = len(unique_users_overall)
     
     return {
         "total": total_sessions,

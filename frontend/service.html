@@ -129,6 +129,8 @@
           </div>
         </div>
       </div>
+
+
       <div class="card">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
           <h3 style="margin:0;">Service Data Upload</h3>
@@ -242,7 +244,25 @@
           <button class="filter-tab active" onclick="filterServiceType('all')">All Items</button>
           <button class="filter-tab" onclick="filterServiceType('estimate')">Service Estimate</button>
           <button class="filter-tab" onclick="filterServiceType('appointment')">Service Appointment</button>
+          <button class="filter-tab" onclick="filterServiceType('reports')">📊 Reports</button>
         </div>
+        
+        <!-- Charts Dashboard moved here -->
+        <div class="charts-card" id="serviceChartsCard" style="display: none; margin-bottom: 20px;">
+          <h3>📊 Analytics Dashboard</h3>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-top: 15px;">
+
+            <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+              <h4 style="text-align: center; color: #1e293b; margin-bottom: 10px;">Service Preferences</h4>
+              <canvas id="servicePreferenceChart"></canvas>
+            </div>
+            <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+              <h4 style="text-align: center; color: #1e293b; margin-bottom: 10px;">Estimate Types</h4>
+              <canvas id="serviceEstimateTypeChart"></canvas>
+            </div>
+          </div>
+        </div>
+
         <div class="table-wrapper">
           <table id="serviceTable">
             <thead id="serviceTableHead">
@@ -262,6 +282,7 @@
       </div>
     </main>
   </div>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="js/config.js?v=1.2"></script>
   <script src="js/service.js"></script>
 

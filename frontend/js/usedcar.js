@@ -82,7 +82,7 @@ function processImageUrl(value) {
 
   // If it's a relative URL
   if (trimmed.startsWith('/')) {
-    return trimmed;
+    return API + trimmed;
   }
 
   // If it already has data: prefix
@@ -134,7 +134,10 @@ let currentReportTab = 'stock';
 let currentActivityType = 'Used Car Test Drive';
 let allActivityEnquiries = [];
 
-function renderUsedCarInventory(cars) {
+let currentUsedCarPage = 0;
+const USED_CAR_PAGE_SIZE = 51;
+
+function renderUsedCarInventory(cars, totalCount = null) {
   const grid = document.getElementById('usedCarInventoryGrid');
   const empty = document.getElementById('usedCarInventoryEmpty');
   if (!grid || !empty) return;
@@ -143,12 +146,12 @@ function renderUsedCarInventory(cars) {
 
   if (!cars.length) {
     empty.classList.remove('hidden');
-    updateUsedCarCount(0, usedCarInventory.length);
+    if (totalCount !== null) updateUsedCarCount(0, totalCount);
     return;
   }
 
   empty.classList.add('hidden');
-  updateUsedCarCount(cars.length, usedCarInventory.length);
+  if (totalCount !== null) updateUsedCarCount(cars.length, totalCount);
 
   for (const car of cars) {
     const card = document.createElement('div');
@@ -226,10 +229,11 @@ function renderUsedCarInventory(cars) {
 
 function updateUsedCarCount(visibleCount, totalCount) {
   const countEl = document.getElementById('usedCarCount');
-  if (!countEl) return;
+  const start = currentUsedCarPage * USED_CAR_PAGE_SIZE + 1;
+  const end = start + visibleCount - 1;
   countEl.textContent = totalCount === 0
     ? 'No cars available'
-    : `Showing ${visibleCount} of ${totalCount} cars`;
+    : `${start}-${end} cars (Total-${totalCount})`;
 }
 
 function setText(id, value) {
@@ -294,7 +298,7 @@ async function openViewUsedCarModal(serial) {
     }
   } catch (error) {
     console.error('Failed to load used car details:', error);
-    alert('Failed to load used car details: ' + error.message);
+    showToast('Failed to load used car details: ' + error.message);
   }
 }
 
@@ -368,6 +372,20 @@ function parseImageStore(raw) {
     } catch(e) {}
   }
 
+  // Handle comma or pipe separated URLs
+  const delimiters = [',', '|||', '||'];
+  for (const delimiter of delimiters) {
+    if (s.includes(delimiter)) {
+      const parts = s.split(delimiter).map(p => p.trim()).filter(p => p.length > 0);
+      if (parts.length > 1) {
+        const keys = ['back', 'right', 'front', 'left', 'interior'];
+        const obj = {};
+        parts.forEach((v, i) => { if (i < keys.length && v) obj[keys[i]] = v; });
+        return obj;
+      }
+    }
+  }
+
   // Single image — treat as back view
   if (s) return { back: s };
   return {};
@@ -410,7 +428,7 @@ function getImagePlaceholderHtml(viewName) {
 
 async function removeCarImage(field) {
   const serial = document.getElementById('viewUsedCarSerial')?.value;
-  if (!serial) return alert('No car selected.');
+  if (!serial) return showToast('No car selected.');
 
   const label = field === 'all' ? 'all images' : field.replace(/_/g, ' ');
   if (!confirm(`Remove ${label}?`)) return;
@@ -427,7 +445,7 @@ async function removeCarImage(field) {
     }
     await openViewUsedCarModal(serial);
   } catch (error) {
-    alert('Failed to remove image: ' + error.message);
+    showToast('Failed to remove image: ' + error.message);
   }
 }
 
@@ -440,7 +458,7 @@ function handleViewImageUpload(event, fieldKey, previewElementId, viewName) {
     displayCarImageView(previewElementId, base64, viewName);
   }).catch(error => {
     console.error('Failed to convert image to base64:', error);
-    alert('Unable to convert image to base64. Please try another file.');
+    showToast('Unable to convert image to base64. Please try another file.');
   });
 }
 
@@ -455,10 +473,10 @@ function fileToBase64(file) {
 
 async function saveViewUploadedImages() {
   const serial = document.getElementById('viewUsedCarSerial')?.value;
-  if (!serial) return alert('No used car selected for image upload.');
+  if (!serial) return showToast('No used car selected for image upload.');
 
   if (!Object.keys(pendingViewCarImages).length) {
-    return alert('Please select at least one image to upload.');
+    return showToast('Please select at least one image to upload.');
   }
 
   try {
@@ -477,11 +495,11 @@ async function saveViewUploadedImages() {
       const err = await res.json().catch(() => ({}));
       throw new Error(err.detail || `Server ${res.status}`);
     }
-    alert('Images uploaded successfully.');
+    showToast('Images uploaded successfully.');
     await openViewUsedCarModal(serial);
   } catch (error) {
     console.error('Failed to upload car images:', error);
-    alert('Failed to upload car images: ' + error.message);
+    showToast('Failed to upload car images: ' + error.message);
   }
 }
 
@@ -554,7 +572,7 @@ async function openEditUsedCarModal(serial) {
     }
   } catch (error) {
     console.error('Failed to load used car for editing:', error);
-    alert('Failed to load used car for editing: ' + error.message);
+    showToast('Failed to load used car for editing: ' + error.message);
   }
 }
 
@@ -608,7 +626,7 @@ function closeEditUsedCarModal() {
 
 async function saveUsedCarEdits() {
   const serial = document.getElementById('editUsedCarId')?.value;
-  if (!serial) return alert('No used car selected for editing');
+  if (!serial) return showToast('No used car selected for editing');
 
   const body = {
     serial_number: document.getElementById('editSerialNumber')?.value.trim(),
@@ -656,12 +674,12 @@ async function saveUsedCarEdits() {
       const err = await res.json().catch(() => ({}));
       throw new Error(err.detail || `Server ${res.status}`);
     }
-    alert('Used car stock updated successfully.');
+    showToast('Used car stock updated successfully.');
     closeEditUsedCarModal();
     await loadUsedCarStock();
   } catch (error) {
     console.error('Failed to update used car stock:', error);
-    alert('Update failed: ' + error.message);
+    showToast('Update failed: ' + error.message);
   }
 }
 
@@ -673,48 +691,43 @@ async function deleteUsedCar(serial) {
       const err = await res.json().catch(() => ({}));
       throw new Error(err.detail || `Server ${res.status}`);
     }
-    alert('Used car stock item deleted.');
+    showToast('Used car stock item deleted.');
     await loadUsedCarStock();
   } catch (error) {
     console.error('Failed to delete used car stock item:', error);
-    alert('Delete failed: ' + error.message);
+    showToast('Delete failed: ' + error.message);
   }
 }
 
-async function loadUsedCarStock() {
+async function loadUsedCarStock(page = 0) {
+  currentUsedCarPage = page;
+  const skip = page * USED_CAR_PAGE_SIZE;
+  const limit = USED_CAR_PAGE_SIZE;
+
+  const search = (document.getElementById('usedCarSearch')?.value || '').trim();
+  const make = (document.getElementById('usedCarMakeFilter')?.value || '').trim();
+  const model = (document.getElementById('usedCarModelFilter')?.value || '').trim();
+
+  let query = `?skip=${skip}&limit=${limit}`;
+  if (search) query += `&search=${encodeURIComponent(search)}`;
+  if (make) query += `&make=${encodeURIComponent(make)}`;
+  if (model) query += `&model=${encodeURIComponent(model)}`;
+
   const grid = document.getElementById('usedCarInventoryGrid');
   const empty = document.getElementById('usedCarInventoryEmpty');
   if (grid) grid.innerHTML = '<div style="grid-column:1/-1;padding:24px;text-align:center;color:#64748b;">Loading used car inventory…</div>';
   if (empty) empty.classList.add('hidden');
 
   try {
-    const res = await fetch(`${API}/usedcar/stock`);
+    const res = await fetch(`${API}/usedcar/stock${query}`);
     if (!res.ok) throw new Error(`Server ${res.status}`);
     const data = await res.json();
-    usedCarInventory = Array.isArray(data) ? data : [];
-
-    // Debug logging
-    if (usedCarInventory.length > 0) {
-      const firstCar = usedCarInventory[0];
-      console.log('=== First Car Image Debug ===');
-      console.log('Car:', `${firstCar.make} ${firstCar.model}`);
-      console.log('Raw image_url:', firstCar.image_url);
-
-      // Parse and show images
-      const imageUrls = parseImageUrls(firstCar.image_url);
-      console.log('Parsed images count:', imageUrls.length);
-      console.log('Parsed image URLs:', imageUrls);
-
-      if (imageUrls.length > 0) {
-        console.log('First image:', imageUrls[0]);
-        console.log('First image processed:', getUsedCarImageSrc(imageUrls[0]));
-      }
-
-      console.log('==============================');
-    }
+    usedCarInventory = Array.isArray(data.items) ? data.items : [];
 
     populateUsedCarFilters(usedCarInventory);
-    renderUsedCarInventory(usedCarInventory);
+    renderUsedCarInventory(usedCarInventory, data.total);
+    renderUsedCarCharts(usedCarInventory);
+    renderUsedCarPagination(data.total);
     const reportSection = document.getElementById('usedCarReportsSection');
     if (reportSection && !reportSection.classList.contains('hidden')) {
       renderUsedCarReports(usedCarInventory);
@@ -723,6 +736,42 @@ async function loadUsedCarStock() {
     console.error('Failed to load used car inventory:', error);
     if (grid) grid.innerHTML = `<div style="grid-column:1/-1;padding:24px;text-align:center;color:#ef4444;">Unable to load inventory</div>`;
   }
+}
+
+function renderUsedCarPagination(totalCount) {
+  let paginationEl = document.getElementById("usedCarPagination");
+  if (!paginationEl) {
+    paginationEl = document.createElement("div");
+    paginationEl.id = "usedCarPagination";
+    paginationEl.className = "pagination-container";
+    const grid = document.getElementById("usedCarInventoryGrid");
+    grid.parentNode.insertBefore(paginationEl, grid.nextSibling);
+  }
+  
+  paginationEl.innerHTML = "";
+  const totalPages = Math.ceil(totalCount / USED_CAR_PAGE_SIZE);
+  
+  if (totalPages <= 1) return;
+  
+  const prevBtn = document.createElement("button");
+  prevBtn.className = "pagination-btn";
+  prevBtn.textContent = "Previous";
+  prevBtn.disabled = currentUsedCarPage === 0;
+  prevBtn.onclick = () => loadUsedCarStock(currentUsedCarPage - 1);
+  
+  const info = document.createElement("span");
+  info.className = "pagination-info";
+  info.textContent = ` Page ${currentUsedCarPage + 1} of ${totalPages} `;
+  
+  const nextBtn = document.createElement("button");
+  nextBtn.className = "pagination-btn";
+  nextBtn.textContent = "Next";
+  nextBtn.disabled = currentUsedCarPage >= totalPages - 1;
+  nextBtn.onclick = () => loadUsedCarStock(currentUsedCarPage + 1);
+  
+  paginationEl.appendChild(prevBtn);
+  paginationEl.appendChild(info);
+  paginationEl.appendChild(nextBtn);
 }
 
 function populateUsedCarFilters(cars) {
@@ -749,29 +798,7 @@ function populateUsedCarFilters(cars) {
 }
 
 function filterUsedCarInventory() {
-  const search = (document.getElementById('usedCarSearch')?.value || '').toLowerCase();
-  const make = (document.getElementById('usedCarMakeFilter')?.value || '').toLowerCase();
-  const model = (document.getElementById('usedCarModelFilter')?.value || '').toLowerCase();
-  const fuel = (document.getElementById('usedCarFuelFilter')?.value || '').toLowerCase();
-  const status = (document.getElementById('usedCarStatusFilter')?.value || '').toLowerCase();
-  const priceRange = document.getElementById('usedCarPriceRangeFilter')?.value || '';
-  const category = (document.getElementById('usedCarCategoryFilter')?.value || '').toLowerCase();
-  const type = (document.getElementById('usedCarTypeFilter')?.value || '').toLowerCase();
-
-  const filtered = usedCarInventory.filter(car => {
-    const text = `${car.make || ''} ${car.model || ''} ${car.variant || ''} ${car.color || ''} ${car.registration_number || ''}`.toLowerCase();
-    const matchesSearch = !search || text.includes(search);
-    const matchesMake = !make || (car.make || '').toLowerCase() === make;
-    const matchesModel = !model || (car.model || '').toLowerCase() === model;
-    const matchesFuel = !fuel || (car.fuel_type || '').toLowerCase() === fuel;
-    const matchesStatus = !status || (car.ready_for_sales || '').toString().trim().toLowerCase() === status;
-    const matchesPrice = !priceRange || checkPriceRange(Number(car.estimated_selling_price), priceRange);
-    const matchesCategory = !category || (car.Category || car.vehicle_category || '').toLowerCase() === category;
-    const matchesType = !type || (car.type || '').toLowerCase() === type;
-    return matchesSearch && matchesMake && matchesModel && matchesFuel && matchesStatus && matchesPrice && matchesCategory && matchesType;
-  });
-
-  renderUsedCarInventory(filtered);
+  loadUsedCarStock(0);
 }
 
 function exportUsedCarsCSV() {
@@ -797,7 +824,7 @@ function exportUsedCarsCSV() {
     return matchesSearch && matchesMake && matchesModel && matchesFuel && matchesStatus && matchesPrice && matchesCategory && matchesType;
   });
 
-  if (!filtered.length) return alert('No data to export matching current filters.');
+  if (!filtered.length) return showToast('No data to export matching current filters.');
 
   const cols = ['registration_number', 'make', 'model', 'variant', 'type', 'manufacturing_year', 'fuel_type', 'transmission_type', 'mileage_km', 'estimated_selling_price', 'color', 'cubic_capacity_cc', 'rc_status', 'rc_expiry_date', 'engine_number', 'chassis_number', 'emission_norms', 'insurance_expiry_date', 'insurance_type', 'ready_for_sales', 'Category'];
   const header = cols.join(',');
@@ -814,6 +841,122 @@ function exportUsedCarsCSV() {
   a.href = url; a.download = 'used_car_inventory_filtered.csv';
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
 }
+
+// -------------------- CHARTS --------------------
+let usedBrandChartInst = null;
+let usedPriceChartInst = null;
+let usedFuelChartInst = null;
+
+function normalizeString(str) {
+  if (!str) return 'Unknown';
+  const s = String(str).trim().toLowerCase();
+  if (!s) return 'Unknown';
+  if (s === 'cng') return 'CNG';
+  if (s === 'ev' || s === 'electric') return 'Electric';
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+function normalizeBrand(brand) {
+  if (!brand) return 'Unknown';
+  let b = brand.trim().toLowerCase();
+  
+  if (b.includes('mahindra') || b.includes('mahindhra')) return 'Mahindra';
+  if (b.includes('hyundai')) return 'Hyundai';
+  if (b.includes('maruti') || b.includes('suzuki')) return 'Maruti Suzuki';
+  if (b.includes('tata')) return 'Tata';
+  if (b.includes('honda')) return 'Honda';
+  if (b.includes('toyota')) return 'Toyota';
+  if (b.includes('kia')) return 'Kia';
+  if (b.includes('mg') || b.includes('morris garages')) return 'MG';
+  if (b.includes('volkswagen') || b.includes('vw')) return 'Volkswagen';
+  if (b.includes('renault')) return 'Renault';
+  if (b.includes('nissan')) return 'Nissan';
+  if (b.includes('skoda')) return 'Skoda';
+  if (b.includes('ford')) return 'Ford';
+  if (b.includes('jeep')) return 'Jeep';
+  
+  return b.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+}
+
+function renderUsedCarCharts(cars) {
+  const chartsCard = document.getElementById('usedCarChartsCard');
+  if (!chartsCard) return;
+  if (!cars || cars.length === 0) {
+    chartsCard.innerHTML = '<div style="padding: 24px; text-align: center; color: #64748b; background: white; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">No data available for charts based on current filters.</div>';
+    chartsCard.style.display = 'block';
+    return;
+  }
+  
+  // Re-render the container if it was previously set to empty state
+  if (chartsCard.innerHTML.includes('No data available')) {
+    chartsCard.innerHTML = `
+      <div class="chart-grid">
+        <div class="chart-container">
+          <h4>Brand Share</h4>
+          <canvas id="usedBrandPieChart"></canvas>
+        </div>
+        <div class="chart-container">
+          <h4>Average Est. Price by Brand</h4>
+          <canvas id="usedPriceBarChart"></canvas>
+        </div>
+        <div class="chart-container">
+          <h4>Fuel Type Distribution</h4>
+          <canvas id="usedFuelDoughnutChart"></canvas>
+        </div>
+      </div>
+    `;
+  }
+
+  chartsCard.style.display = 'block';
+
+  const brandCount = {};
+  const brandPriceTotal = {};
+  const brandPriceCount = {};
+  const fuelCount = {};
+
+  cars.forEach(car => {
+    const make = normalizeBrand(car.make);
+    brandCount[make] = (brandCount[make] || 0) + 1;
+    
+    if (car.estimated_selling_price) {
+      brandPriceTotal[make] = (brandPriceTotal[make] || 0) + Number(car.estimated_selling_price);
+      brandPriceCount[make] = (brandPriceCount[make] || 0) + 1;
+    }
+
+    const ft = normalizeString(car.fuel_type);
+    fuelCount[ft] = (fuelCount[ft] || 0) + 1;
+  });
+
+  const commonColors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316', '#64748b', '#06b6d4'];
+
+  const brandLabels = Object.keys(brandCount);
+  const brandData = Object.values(brandCount);
+  if (usedBrandChartInst) usedBrandChartInst.destroy();
+  usedBrandChartInst = new Chart(document.getElementById('usedBrandPieChart'), {
+    type: 'pie',
+    data: { labels: brandLabels, datasets: [{ data: brandData, backgroundColor: commonColors, borderWidth: 1 }] },
+    options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+  });
+
+  const priceLabels = Object.keys(brandPriceTotal);
+  const priceData = priceLabels.map(make => Math.round(brandPriceTotal[make] / brandPriceCount[make]));
+  if (usedPriceChartInst) usedPriceChartInst.destroy();
+  usedPriceChartInst = new Chart(document.getElementById('usedPriceBarChart'), {
+    type: 'bar',
+    data: { labels: priceLabels, datasets: [{ label: 'Avg Price (₹)', data: priceData, backgroundColor: commonColors, borderRadius: 4 }] },
+    options: { responsive: true, scales: { y: { beginAtZero: true } }, plugins: { legend: { display: false } } }
+  });
+
+  const fuelLabels = Object.keys(fuelCount);
+  const fuelData = Object.values(fuelCount);
+  if (usedFuelChartInst) usedFuelChartInst.destroy();
+  usedFuelChartInst = new Chart(document.getElementById('usedFuelDoughnutChart'), {
+    type: 'doughnut',
+    data: { labels: fuelLabels, datasets: [{ data: fuelData, backgroundColor: commonColors, borderWidth: 1 }] },
+    options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+  });
+}
+
 window.exportUsedCarsCSV = exportUsedCarsCSV;
 
 function navigateToUsedCarReports() {
@@ -861,25 +1004,25 @@ function renderUsedCarReports(cars) {
   setText('reportAveragePrice', averagePrice ? `₹${averagePrice.toLocaleString('en-IN')}` : '₹0');
 
   const modelCounts = cars.reduce((acc, car) => {
-    const model = (car.model || 'Unknown').trim();
+    const model = normalizeString(car.model);
     acc[model] = (acc[model] || 0) + 1;
     return acc;
   }, {});
 
   const brandCounts = cars.reduce((acc, car) => {
-    const brand = (car.make || 'Unknown').trim();
+    const brand = normalizeBrand(car.make);
     acc[brand] = (acc[brand] || 0) + 1;
     return acc;
   }, {});
 
   const fuelCounts = cars.reduce((acc, car) => {
-    const fuel = (car.fuel_type || 'Unknown').trim();
+    const fuel = normalizeString(car.fuel_type);
     acc[fuel] = (acc[fuel] || 0) + 1;
     return acc;
   }, {});
 
   const statusCounts = cars.reduce((acc, car) => {
-    const status = (car.ready_for_sales || 'Available').toString().trim();
+    const status = normalizeString((car.ready_for_sales || 'Available').toString());
     acc[status] = (acc[status] || 0) + 1;
     return acc;
   }, {});
@@ -902,12 +1045,12 @@ function renderUsedCarReports(cars) {
     const maxValue = Math.max(...entries.map(e => e[1]));
 
     if (isVertical) {
-      container.innerHTML = entries.map(([label, count]) => {
+      container.innerHTML = entries.map(([label, count], index) => {
         const height = (count / maxValue) * 100;
         return `
           <div class="vertical-bar-container">
             <div class="vertical-bar-wrapper">
-              <div class="vertical-bar-fill" style="height:${height}%; background: ${getChartColor(containerId, label)};">
+              <div class="vertical-bar-fill" style="height:${height}%; background: ${getChartColor(containerId, label, index)};">
                 <span class="vertical-bar-value">${count}</span>
               </div>
             </div>
@@ -916,7 +1059,7 @@ function renderUsedCarReports(cars) {
         `;
       }).join('');
     } else {
-      entries.forEach(([label, count]) => {
+      entries.forEach(([label, count], index) => {
         const row = document.createElement('div');
         row.className = 'model-chart-row';
         if (containerId === 'usedCarFuelChart' || containerId === 'usedCarStatusChart') {
@@ -924,7 +1067,7 @@ function renderUsedCarReports(cars) {
         }
         row.innerHTML = `
           <div class="model-chart-label" title="${escapeHtml(label)}">${escapeHtml(label)}</div>
-          <div class="model-chart-bar"><div class="model-chart-bar-fill" style="width:${(count / maxValue) * 100}%; background: ${getChartColor(containerId, label)};"></div></div>
+          <div class="model-chart-bar"><div class="model-chart-bar-fill" style="width:${(count / maxValue) * 100}%; background: ${getChartColor(containerId, label, index)};"></div></div>
           <div class="model-chart-value">${count}</div>
         `;
         container.appendChild(row);
@@ -932,7 +1075,7 @@ function renderUsedCarReports(cars) {
     }
   };
 
-  const getChartColor = (id, label) => {
+  const getChartColor = (id, label, index = 0) => {
     if (id === 'usedCarStatusChart') {
       const l = label.toLowerCase();
       if (l.includes('sold')) return '#ef4444';
@@ -946,8 +1089,8 @@ function renderUsedCarReports(cars) {
       if (l === 'ev' || l === 'electric') return '#10b981';
       return '#6366f1';
     }
-    if (id.includes('TestDrive')) return '#6366f1'; // Indigo for Test Drives
-    return '#4f46e5';
+    const commonColors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316', '#64748b', '#06b6d4'];
+    return commonColors[index % commonColors.length];
   };
 
   // Only render the Brand Wise Test Drive chart as requested
@@ -964,7 +1107,7 @@ function renderUsedCarReports(cars) {
       allActivityEnquiries = usedEnquiries;
 
       const brandEnqCounts = usedEnquiries.reduce((acc, item) => {
-        const brand = (item.brand || 'Unknown').trim();
+        const brand = normalizeBrand(item.brand);
         acc[brand] = (acc[brand] || 0) + 1;
         return acc;
       }, {});
@@ -1252,7 +1395,7 @@ function handleUsedDrop(e) {
     if (nameEl) nameEl.textContent = file.name;
     if (previewEl) previewEl.style.display = 'flex';
   } else {
-    alert('Please drop a valid CSV file.');
+    showToast('Please drop a valid CSV file.');
   }
 }
 
@@ -1292,7 +1435,7 @@ async function uploadUsedFile() {
   const btn = document.getElementById('usedUploadBtn');
 
   if (!fileInput || !fileInput.files.length) {
-    alert('Please select a CSV file first.');
+    showToast('Please select a CSV file first.');
     return;
   }
 
@@ -1314,14 +1457,14 @@ async function uploadUsedFile() {
 
     const result = await res.json();
     if (res.ok) {
-      alert('Success: ' + result.message);
+      showToast('Success: ' + result.message);
       toggleUsedExcelUpload();
       loadUsedCarStock();
     } else {
       throw new Error(result.detail || 'Upload failed');
     }
   } catch (error) {
-    alert('Error: ' + error.message);
+    showToast('Error: ' + error.message);
   } finally {
     if (btn) {
       btn.disabled = false;

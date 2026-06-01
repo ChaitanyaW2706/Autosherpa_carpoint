@@ -19,6 +19,9 @@ function filterByStat(intent) {
     cards[cardIndex].classList.add('active');
   }
   
+  const leadsContainer = document.querySelector('.leads-container');
+  
+  if (leadsContainer) leadsContainer.style.display = 'block';
   currentIntentFilter = intent === 'all' ? null : intent;
   loadLeads(null, intent === 'all' ? null : intent);
 }
@@ -406,6 +409,8 @@ window.addEventListener('DOMContentLoaded', () => {
     phoneInput.addEventListener('change', checkPhoneNumberDuplicate);
   }
 });
+
+
 
 window.loadStats = loadStats;
 window.loadLeads = loadLeads;

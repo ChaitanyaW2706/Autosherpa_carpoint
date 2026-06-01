@@ -10,6 +10,11 @@ from routes.locations   import router as locations_router
 from routes.aboutus     import router as aboutus_router
 from routes.refinancing import router as refinancing_router
 from routes.auth       import router as auth_router, init_users_table
+from db import get_mongo_col
+from bson.objectid import ObjectId
+import gridfs
+from fastapi.responses import StreamingResponse
+from fastapi import HTTPException
 
 app = FastAPI(title="AutoSherpa Ops API")
 
@@ -41,3 +46,13 @@ def on_startup():
 @app.get("/")
 def root():
     return {"message": "AutoSherpa Ops API is running"}
+
+@app.get("/images/{file_id}")
+def get_image(file_id: str):
+    try:
+        col = get_mongo_col()
+        fs = gridfs.GridFS(col.database)
+        grid_out = fs.get(ObjectId(file_id))
+        return StreamingResponse(grid_out, media_type=grid_out.content_type or "image/jpeg")
+    except Exception as e:
+        raise HTTPException(status_code=404, detail="Image not found")

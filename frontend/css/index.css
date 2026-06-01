@@ -724,21 +724,26 @@ body {
   display: grid;
   grid-template-columns: repeat(15, minmax(0, 1fr));
   gap: 10px;
-  font-size: 10px;
-  color: var(--neutral-500);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--neutral-600);
   text-align: center;
+  margin-top: 16px;
+  padding-bottom: 24px;
 }
 
 .trend-labels span {
+  display: block;
   transform: rotate(-45deg);
-  transform-origin: top left;
+  transform-origin: center;
   white-space: nowrap;
   cursor: pointer;
+  margin-left: -6px;
 }
 
 .trend-labels span:hover {
   color: var(--primary-500);
-  font-weight: 600;
+  font-weight: 700;
 }
 
 /* Summary Card Styles */
@@ -1979,3 +1984,9 @@ body {
   .header h1 { font-size: 24px; }
   .card, .dash-card { padding: 20px 16px; border-radius: 20px; }
 }
+/* Premium Pagination Styles */
+.pagination-container { display: flex; justify-content: center; align-items: center; gap: 15px; margin: 30px 0; padding: 10px; }
+.pagination-btn { padding: 8px 16px; border: none; background: linear-gradient(135deg, #6366f1, #4f46e5); color: white; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); font-family: inherit; }
+.pagination-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); }
+.pagination-btn:disabled { background: #e2e8f0; color: #94a3b8; cursor: not-allowed; box-shadow: none; transform: none; }
+.pagination-info { font-weight: 600; color: #334155; font-size: 0.95rem; background: white; padding: 8px 16px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; }

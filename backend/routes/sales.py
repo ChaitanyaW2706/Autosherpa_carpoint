@@ -1,10 +1,27 @@
-# sales.py - Fixed version
 import csv
 import io
 import json
+import base64
 from fastapi import APIRouter, Query, Body, HTTPException, UploadFile, File
-from db import get_db
+from db import get_db, get_mongo_col
 import pandas as pd
+import gridfs
+
+def upload_to_gridfs(base64_str, filename):
+    if not base64_str: return None
+    try:
+        col = get_mongo_col()
+        fs = gridfs.GridFS(col.database)
+        if base64_str.startswith("data:"):
+            header, encoded = base64_str.split(",", 1)
+        else:
+            encoded = base64_str.strip('"').strip("'")
+        bytes_data = base64.b64decode(encoded)
+        file_id = fs.put(bytes_data, filename=filename)
+        return f"/images/{str(file_id)}"
+    except Exception as e:
+        print(f"GridFS upload error: {e}")
+        return base64_str # Fallback to original string if error
 
 router = APIRouter()
 
@@ -115,8 +132,21 @@ def add_car(car: dict = Body(...)):
     cur = db.cursor()
     try:
         image_value = car.get("car_images_base64") or car.get("car_image_base64")
-        if isinstance(image_value, list):
-            image_value = json.dumps(image_value)
+        image_urls = []
+        if image_value:
+            if isinstance(image_value, list):
+                for i, img in enumerate(image_value):
+                    url = upload_to_gridfs(img, f"car_new_{i}.jpg")
+                    if url: image_urls.append(url)
+            else:
+                url = upload_to_gridfs(image_value, "car_new_0.jpg")
+                if url: image_urls.append(url)
+        
+        image_json = json.dumps(image_urls) if image_urls else None
+        
+        brochure_val = car.get("brochure_pdf_base64")
+        brochure_url = upload_to_gridfs(brochure_val, "brochure_new.pdf") if brochure_val else None
+
         resolved_type_id = resolve_car_type_id(cur, car.get("type_id"), car.get("custom_type_name"))
         cur.execute("""
             INSERT INTO sales_car_details 
@@ -131,8 +161,8 @@ def add_car(car: dict = Body(...)):
             int(car["mileage_kmph"]),
             int(car.get("ex_showroom_price_base", 0)),
             int(car.get("ex_showroom_price_top", 0)),
-            image_value,
-            car.get("brochure_pdf_base64"),
+            image_json,
+            brochure_url,
             resolved_type_id,
             car.get("description")
         ))
@@ -170,14 +200,31 @@ def update_car(car_id: int, car: dict = Body(...)):
         existing = cur.fetchone() or {}
 
         image_value = car.get("car_images_base64") or car.get("car_image_base64")
-        if isinstance(image_value, list):
-            image_value = json.dumps(image_value)
-        if image_value is None:
-            image_value = existing.get("car_image_base64")
+        image_json = existing.get("car_image_base64")
+        if image_value is not None:
+            image_urls = []
+            if isinstance(image_value, list):
+                for i, img in enumerate(image_value):
+                    if img.startswith("data:") or len(img) > 200:
+                        url = upload_to_gridfs(img, f"car_{car_id}_{i}.jpg")
+                        if url: image_urls.append(url)
+                    else:
+                        image_urls.append(img)
+            else:
+                if image_value.startswith("data:") or len(image_value) > 200:
+                    url = upload_to_gridfs(image_value, f"car_{car_id}_0.jpg")
+                    if url: image_urls.append(url)
+                else:
+                    image_urls.append(image_value)
+            image_json = json.dumps(image_urls) if image_urls else None
 
         brochure_value = car.get("brochure_pdf_base64")
-        if brochure_value is None:
-            brochure_value = existing.get("brochure_pdf_base64")
+        brochure_url = existing.get("brochure_pdf_base64")
+        if brochure_value is not None:
+            if brochure_value.startswith("data:") or len(brochure_value) > 200:
+                brochure_url = upload_to_gridfs(brochure_value, f"brochure_{car_id}.pdf")
+            else:
+                brochure_url = brochure_value
 
         new_type_id = resolve_car_type_id(cur, car.get("type_id"), car.get("custom_type_name"))
         cur.execute("""
@@ -200,8 +247,8 @@ def update_car(car_id: int, car: dict = Body(...)):
             car["mileage_kmph"],
             car.get("ex_showroom_price_base", 0),
             car.get("ex_showroom_price_top", 0),
-            image_value,
-            brochure_value,
+            image_json,
+            brochure_url,
             new_type_id,
             car.get("description"),
             car_id
@@ -349,33 +396,74 @@ def delete_transmission(id: int):
 
 # -------------------- FAST META ENDPOINT (NO IMAGES - FOR FAST INITIAL LOAD) --------------------
 @router.get("/cars-meta")
-def get_cars_meta(car_id: int = Query(None)):
-    """Returns all car details EXCEPT base64 images/brochures - for fast initial page load."""
+def get_cars_meta(
+    car_id: int = Query(None),
+    skip: int = Query(0),
+    limit: int = Query(100),
+    search: str = Query(None),
+    brand: str = Query(None),
+    model: str = Query(None),
+    fuel: str = Query(None),
+    type: str = Query(None)
+):
+    """Returns paginated and filtered car details WITHOUT massive Base64 values."""
     db = get_db()
     cur = db.cursor(dictionary=True)
 
     query = """
-    SELECT 
-        s.id,
-        s.make,
-        s.model,
-        s.variant,
-        s.mileage_kmph,
+    SELECT DISTINCT
+        s.id, s.make, s.model, s.variant, s.mileage_kmph,
         s.`Ex-Showroom Price Base Model` AS ex_showroom_price_base,
         s.`Ex-Showroom Price Top Model` AS ex_showroom_price_top,
-        s.type_id,
-        t.type_name AS type_name,
-        s.description
+        s.type_id, t.type_name AS type_name, s.description
     FROM sales_car_details s
     LEFT JOIN car_types t ON t.id = s.type_id
     """
+    
+    joins = ""
+    conditions = []
+    params = []
 
     if car_id:
-        query += " WHERE s.id = %s"
-        cur.execute(query, (car_id,))
+        conditions.append("s.id = %s")
+        params.append(car_id)
     else:
-        cur.execute(query)
+        if search:
+            conditions.append("(s.make LIKE %s OR s.model LIKE %s OR s.variant LIKE %s)")
+            params.extend([f"%{search}%", f"%{search}%", f"%{search}%"])
+        if brand:
+            conditions.append("s.make = %s")
+            params.append(brand)
+        if model:
+            conditions.append("s.model = %s")
+            params.append(model)
+        if type:
+            conditions.append("t.type_name = %s")
+            params.append(type)
+        if fuel:
+            joins += " LEFT JOIN car_fuel_types cf ON cf.car_id = s.id "
+            conditions.append("cf.fuel_type = %s")
+            params.append(fuel)
 
+    query += joins
+    if conditions:
+        query += " WHERE " + " AND ".join(conditions)
+
+    query += " ORDER BY s.id DESC"
+    
+    # Meta endpoint pagination
+    if not car_id:
+        query += " LIMIT %s OFFSET %s"
+        params.extend([limit, skip])
+        
+    # Also get total count
+    count_query = "SELECT COUNT(DISTINCT s.id) as total FROM sales_car_details s LEFT JOIN car_types t ON t.id = s.type_id " + joins
+    if conditions:
+        count_query += " WHERE " + " AND ".join(conditions)
+    cur.execute(count_query, tuple(params[:-2] if not car_id else params))
+    total_count = cur.fetchone()["total"]
+
+    cur.execute(query, tuple(params))
     cars = cur.fetchall()
 
     if not cars:
@@ -406,7 +494,7 @@ def get_cars_meta(car_id: int = Query(None)):
         car["colors"] = colors_map.get(cid, [])
         car["car_image_base64"] = None  # placeholder - loaded lazily
 
-    return cars
+    return {"items": cars, "total": total_count, "skip": skip, "limit": limit}
 
 
 # -------------------- IMAGE-ONLY ENDPOINT (FOR LAZY LOADING) --------------------
@@ -450,21 +538,33 @@ def get_cars_grouped(car_id: int = Query(None)):
         query += " WHERE s.id = %s"
         cur.execute(query, (car_id,))
     else:
+        query += " LIMIT 50" # Prevent massive fetching if no ID provided
         cur.execute(query)
 
     cars = cur.fetchall()
 
+    if not cars: return cars
+
+    car_ids = [c["id"] for c in cars]
+    fmt = ",".join(["%s"] * len(car_ids))
+
+    cur.execute(f"SELECT id, car_id, fuel_type FROM car_fuel_types WHERE car_id IN ({fmt})", car_ids)
+    fuels_map = {}
+    for row in cur.fetchall(): fuels_map.setdefault(row["car_id"], []).append(row)
+
+    cur.execute(f"SELECT id, car_id, transmission_type FROM car_transmissions WHERE car_id IN ({fmt})", car_ids)
+    trans_map = {}
+    for row in cur.fetchall(): trans_map.setdefault(row["car_id"], []).append(row)
+
+    cur.execute(f"SELECT id, car_id, color_name FROM car_colors WHERE car_id IN ({fmt})", car_ids)
+    colors_map = {}
+    for row in cur.fetchall(): colors_map.setdefault(row["car_id"], []).append(row)
+
     for car in cars:
         cid = car["id"]
-
-        cur.execute("SELECT id, fuel_type FROM car_fuel_types WHERE car_id=%s", (cid,))
-        car["fuels"] = cur.fetchall()
-
-        cur.execute("SELECT id, transmission_type FROM car_transmissions WHERE car_id=%s", (cid,))
-        car["transmissions"] = cur.fetchall()
-
-        cur.execute("SELECT id, color_name FROM car_colors WHERE car_id=%s", (cid,))
-        car["colors"] = cur.fetchall()
+        car["fuels"] = fuels_map.get(cid, [])
+        car["transmissions"] = trans_map.get(cid, [])
+        car["colors"] = colors_map.get(cid, [])
 
     return cars
 
@@ -616,11 +716,21 @@ async def bulk_upload_cars(file: UploadFile = File(...)):
             except (ValueError, TypeError):
                 mileage = 0
             try:
-                price_base = int(float(price_base)) if price_base else 0
+                if price_base:
+                    import re
+                    pb_clean = re.sub(r'[^\d.]', '', str(price_base))
+                    price_base = int(float(pb_clean)) if pb_clean else 0
+                else:
+                    price_base = 0
             except (ValueError, TypeError):
                 price_base = 0
             try:
-                price_top = int(float(price_top)) if price_top else 0
+                if price_top:
+                    import re
+                    pt_clean = re.sub(r'[^\d.]', '', str(price_top))
+                    price_top = int(float(pt_clean)) if pt_clean else 0
+                else:
+                    price_top = 0
             except (ValueError, TypeError):
                 price_top = 0
 

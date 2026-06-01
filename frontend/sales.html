@@ -133,15 +133,36 @@
         </div>
       </div>
 
-      <!-- Top Controls -->
-      <div class="card">
-        <div class="sales-top-grid">
-          <div class="sales-top-item">
-            <h3>📦 Inventory Management</h3>
-            <p class="small-text">Upload, manage, and track all car models</p>
+      <!-- View Tabs -->
+      <div class="card" style="padding: 10px 20px; margin-bottom: 20px;">
+        <div class="filter-tabs" style="display: flex; gap: 10px; margin: 0; padding: 0; border: none; background: transparent;">
+          <button id="tabInventory" class="filter-tab active" onclick="switchSalesView('inventory')" style="padding: 10px 20px; font-weight: 600; border-radius: 8px; border: 1px solid #e2e8f0; background: white; cursor: pointer;">📦 Inventory Management</button>
+          <button id="tabReports" class="filter-tab" onclick="switchSalesView('reports')" style="padding: 10px 20px; font-weight: 600; border-radius: 8px; border: 1px solid #e2e8f0; background: white; cursor: pointer;">📊 Reports</button>
+        </div>
+      </div>
+
+      <div id="reportsView" style="display: none;">
+        <!-- Charts Dashboard -->
+        <div class="card charts-card" id="salesChartsCard">
+          <h3>📊 Analytics Dashboard</h3>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-top: 15px;">
+            <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+              <h4 style="text-align: center; color: #1e293b; margin-bottom: 10px;">Cars by Brand</h4>
+              <canvas id="brandPieChart"></canvas>
+            </div>
+            <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+              <h4 style="text-align: center; color: #1e293b; margin-bottom: 10px;">Average Price by Brand (₹)</h4>
+              <canvas id="priceBarChart"></canvas>
+            </div>
+            <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+              <h4 style="text-align: center; color: #1e293b; margin-bottom: 10px;">Cars by Fuel Type</h4>
+              <canvas id="fuelDoughnutChart"></canvas>
+            </div>
           </div>
         </div>
       </div>
+
+      <div id="inventoryView">
 
       <!-- ══════════════════════════════════════════════════
            UPLOAD FULL-PAGE OVERLAY
@@ -387,6 +408,7 @@
           <p>Click "Add vehicle" to start building your inventory.</p>
         </div>
       </div>
+      </div> <!-- End of inventoryView -->
 
       <!-- Variant Add/Edit Modal -->
       <div id="variantModal" class="modal">
@@ -648,6 +670,7 @@
     </main>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="js/config.js?v=1.2"></script>
   <script src="js/sales.js"></script>
   <script>

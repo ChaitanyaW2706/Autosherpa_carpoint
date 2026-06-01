@@ -191,7 +191,7 @@ function applyServiceDateFilter() {
   const startInput = document.getElementById("serviceStartDate").value;
   const endInput = document.getElementById("serviceEndDate").value;
   if (!startInput || !endInput) {
-    alert("Please select both start and end dates.");
+    showToast("Please select both start and end dates.");
     return;
   }
   serviceRangeMode = "custom";
@@ -335,6 +335,7 @@ function renderServiceRows(items) {
 function viewServiceReport(type) {
   activeReportType = type;
   renderServiceRows(filterServiceItems(type));
+  renderServiceCharts(filterServiceItems(type));
   document.getElementById("serviceTableSection").scrollIntoView({ behavior: "smooth" });
   // Update active filter tab
   document.querySelectorAll(".filter-tab").forEach(btn => btn.classList.remove("active"));
@@ -348,14 +349,32 @@ function viewServiceReport(type) {
 }
 
 function filterServiceType(type) {
-  activeReportType = type;
-  renderServiceRows(filterServiceItems(type));
+  const tableWrapper = document.querySelector('.table-wrapper');
+  const filterSection = document.querySelector('.service-filter-section');
+  const chartsCard = document.getElementById('serviceChartsCard');
+
+  if (type === 'reports') {
+    if(tableWrapper) tableWrapper.style.display = 'none';
+    if(filterSection) filterSection.style.display = 'none';
+    if(chartsCard) chartsCard.style.display = 'block';
+    activeReportType = type;
+    renderServiceCharts(allServiceItems);
+  } else {
+    if(tableWrapper) tableWrapper.style.display = 'block';
+    if(filterSection) filterSection.style.display = 'block';
+    if(chartsCard) chartsCard.style.display = 'none';
+    activeReportType = type;
+    renderServiceRows(filterServiceItems(type));
+  }
+
   // Update active filter tab
   document.querySelectorAll(".filter-tab").forEach(btn => btn.classList.remove("active"));
   if (type === "estimate") {
     document.querySelectorAll(".filter-tab")[1].classList.add("active");
   } else if (type === "appointment") {
     document.querySelectorAll(".filter-tab")[2].classList.add("active");
+  } else if (type === "reports") {
+    document.querySelectorAll(".filter-tab")[3].classList.add("active");
   } else {
     document.querySelectorAll(".filter-tab")[0].classList.add("active");
   }
@@ -374,6 +393,7 @@ async function loadServiceRecords() {
 
     updateServiceReportCards(allServiceItems);
     renderServiceRows(filterServiceItems(activeReportType));
+    renderServiceCharts(filterServiceItems(activeReportType));
     
     // Maintain active filter tab based on activeReportType
     document.querySelectorAll(".filter-tab").forEach((btn, idx) => {
@@ -398,6 +418,83 @@ async function loadServiceRecords() {
     document.getElementById("appointmentWeekly").textContent = "—";
     document.getElementById("appointmentMonthly").textContent = "—";
   }
+}
+
+// -------------------- CHARTS --------------------
+let serviceSourceChartInst = null;
+let servicePreferenceChartInst = null;
+let serviceEstimateChartInst = null;
+
+function normalizeServiceString(str) {
+  if (!str) return 'Unknown';
+  let s = String(str).trim().toLowerCase();
+  if (!s) return 'Unknown';
+  
+  if (s.includes('pickup') && s.includes('drop')) return 'Pickup & Drop';
+  if (s.includes('drive in')) return 'Drive In';
+  if (s.includes('pickup only')) return 'Pickup Only';
+  
+  if (s.includes('tire') || s.includes('wheel')) return 'Tire & Wheel Service';
+  if (s.includes('running')) return 'Running Repair';
+  if (s.includes('battery') || s.includes('electrical')) return 'Battery & Electrical';
+  if (s.includes('accidental') || s.includes('bodywork')) return 'Accidental/Bodywork';
+  if (s.includes('unknown')) return 'Unknown';
+  if (s.includes('same service') || s.includes('same_service')) return 'Same Service Type';
+  if (s.includes('advisor manual') || s.includes('advisor_manual')) return 'Advisor Manual Review';
+
+  // Replace underscores with spaces and capitalize each word
+  return s.split(/[\s_]+/).map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+}
+
+function renderServiceCharts(items) {
+  const chartsCard = document.getElementById('serviceChartsCard');
+  if (!chartsCard) return;
+  if (activeReportType !== 'reports' || !items || items.length === 0) {
+    chartsCard.style.display = 'none';
+    return;
+  }
+  chartsCard.style.display = 'block';
+
+  const sourceCount = {};
+  const prefCount = {};
+  const estCount = {};
+
+  items.forEach(item => {
+    const src = item.source || 'Unknown';
+    sourceCount[src] = (sourceCount[src] || 0) + 1;
+
+    if (src === 'Service Appointment') {
+      const pref = normalizeServiceString(item.service_preference);
+      prefCount[pref] = (prefCount[pref] || 0) + 1;
+    }
+    
+    if (src === 'Service Estimate') {
+      const est = normalizeServiceString(item.estimate_type);
+      estCount[est] = (estCount[est] || 0) + 1;
+    }
+  });
+
+  const commonColors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316', '#64748b', '#06b6d4'];
+
+
+
+  const prefLabels = Object.keys(prefCount);
+  const prefData = Object.values(prefCount);
+  if (servicePreferenceChartInst) servicePreferenceChartInst.destroy();
+  servicePreferenceChartInst = new Chart(document.getElementById('servicePreferenceChart'), {
+    type: 'doughnut',
+    data: { labels: prefLabels, datasets: [{ data: prefData, backgroundColor: commonColors }] },
+    options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+  });
+
+  const estLabels = Object.keys(estCount);
+  const estData = Object.values(estCount);
+  if (serviceEstimateChartInst) serviceEstimateChartInst.destroy();
+  serviceEstimateChartInst = new Chart(document.getElementById('serviceEstimateTypeChart'), {
+    type: 'bar',
+    data: { labels: estLabels, datasets: [{ label: 'Estimates', data: estData, backgroundColor: commonColors, borderRadius: 4 }] },
+    options: { responsive: true, scales: { y: { beginAtZero: true } }, plugins: { legend: { display: false } } }
+  });
 }
 
 let currentPreviewType = 'forecast';

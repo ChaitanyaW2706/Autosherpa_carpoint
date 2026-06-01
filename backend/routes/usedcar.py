@@ -1,10 +1,33 @@
 import csv
 import io
 import json
+import base64
 from fastapi import APIRouter, Query, Body, HTTPException, UploadFile, File
-from db import get_db
+from db import get_db, get_mongo_col
+import gridfs
 from datetime import datetime, timezone, timedelta
 from typing import Optional
+
+def upload_to_gridfs(base64_str, filename):
+    if not base64_str: return None
+    try:
+        col = get_mongo_col()
+        fs = gridfs.GridFS(col.database)
+        if base64_str.startswith("data:"):
+            header, encoded = base64_str.split(",", 1)
+        else:
+            encoded = base64_str.strip('"').strip("'")
+        
+        # Check if it's already a URL
+        if base64_str.startswith("http") or base64_str.startswith("/"):
+            return base64_str
+
+        bytes_data = base64.b64decode(encoded)
+        file_id = fs.put(bytes_data, filename=filename)
+        return f"/images/{str(file_id)}"
+    except Exception as e:
+        print(f"GridFS upload error in usedcar: {e}")
+        return base64_str
 
 IST = timezone(timedelta(hours=5, minutes=30))
 
@@ -87,6 +110,12 @@ def create_used_car_stock(item: dict = Body(...)):
     db = get_db()
     cur = db.cursor()
     try:
+        # Process Image Fields to GridFS
+        for view_field in ["back_view_image", "right_view_image", "front_view_image", "left_view_image", "interior_image", "image_url"]:
+            val = item.get(view_field)
+            if val and len(val) > 200:
+                item[view_field] = upload_to_gridfs(val, f"used_{item.get('serial_number')}_{view_field}.jpg")
+
         # Try with new image fields first, fallback if columns don't exist
         try:
             cur.execute(
@@ -195,10 +224,13 @@ def get_used_car_stock(
     search: str = Query(None, description="Search text for make/model/variant/color/registration"),
     make: str = Query(None, description="Filter by make"),
     model: str = Query(None, description="Filter by model"),
+    skip: int = Query(0),
+    limit: int = Query(50)
 ):
     db = get_db()
     cur = db.cursor(dictionary=True)
     query = "SELECT * FROM carstockdata"
+    count_query = "SELECT COUNT(*) as total FROM carstockdata"
     conditions = []
     params = []
 
@@ -217,11 +249,25 @@ def get_used_car_stock(
         params.append(model)
 
     if conditions:
-        query += " WHERE " + " AND ".join(conditions)
+        where_clause = " WHERE " + " AND ".join(conditions)
+        query += where_clause
+        count_query += where_clause
 
-    query += " ORDER BY CreatedAt DESC"
+    cur.execute(count_query, tuple(params))
+    total_count = cur.fetchone()["total"]
+
+    query += " ORDER BY CreatedAt DESC LIMIT %s OFFSET %s"
+    params.extend([limit, skip])
+    
     cur.execute(query, tuple(params))
-    return cur.fetchall()
+    items = cur.fetchall()
+    
+    # Do not send massive base64s to frontend if they slipped through
+    for item in items:
+        # We will assume they are URLs now due to GridFS
+        pass
+
+    return {"items": items, "total": total_count, "skip": skip, "limit": limit}
 
 
 @router.get("/stock/{serial_number}")
@@ -247,10 +293,16 @@ def update_used_car_stock(serial_number: str, item: dict = Body(...)):
         return existing.get(key) if value in (None, "") else value
 
     try:
+        # Process Image Fields to GridFS
+        for view_field in ["back_view_image", "right_view_image", "front_view_image", "left_view_image", "interior_image", "image_url"]:
+            val = item.get(view_field)
+            if val and len(val) > 200 and not val.startswith("/images/") and not val.startswith("http"):
+                item[view_field] = upload_to_gridfs(val, f"used_{serial_number}_{view_field}.jpg")
+
         # Try with new image fields first
         try:
             cur.execute(
-                """
+                f"""
                 UPDATE carstockdata SET
                     serial_number=%s,
                     make=%s,
@@ -432,7 +484,7 @@ async def bulk_upload_used_cars(file: UploadFile = File(...)):
         raise HTTPException(status_code=400, detail="Only CSV files are supported")
     
     content = await file.read()
-    decoded = content.decode('utf-8').splitlines()
+    decoded = content.decode('utf-8-sig').splitlines()
     reader = csv.DictReader(decoded)
     
     db = get_db()
@@ -511,7 +563,7 @@ async def bulk_update_used_status(file: UploadFile = File(...)):
         raise HTTPException(status_code=400, detail="Only CSV files are supported")
     
     content = await file.read()
-    decoded = content.decode('utf-8').splitlines()
+    decoded = content.decode('utf-8-sig').splitlines()
     reader = csv.DictReader(decoded)
     
     db = get_db()

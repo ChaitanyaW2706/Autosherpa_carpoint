@@ -110,7 +110,7 @@ def get_estimates():
 # VIEW / DOWNLOAD ESTIMATE DOCUMENT (BLOB)
 # ---------------------------
 @router.get("/estimates/{estimate_id}/document")
-def view_or_download_estimate_document(estimate_id: int):
+def view_or_download_estimate_document(estimate_id: int, download: bool = False):
     db = get_db()
     cur = db.cursor(dictionary=True)
 
@@ -131,11 +131,13 @@ def view_or_download_estimate_document(estimate_id: int):
     file_name = row["document_name"]
     file_type = row["document_type"]
 
+    disposition = "attachment" if download else "inline"
+
     return StreamingResponse(
         io.BytesIO(file_bytes),
         media_type=file_type,
         headers={
-            "Content-Disposition": f'inline; filename="{file_name}"'
+            "Content-Disposition": f'{disposition}; filename="{file_name}"'
         }
     )
 

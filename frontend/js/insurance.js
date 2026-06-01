@@ -13,16 +13,22 @@ function showTab(tab) {
   const estimate = document.getElementById("estimateSection");
   const upload = document.getElementById("uploadSection");
   
+  const reports = document.getElementById("reportsSection");
+  
   const tabRenewal = document.getElementById("tabRenewal");
   const tabEstimate = document.getElementById("tabEstimate");
   const tabUpload = document.getElementById("tabUpload");
+  const tabReports = document.getElementById("tabReports");
 
   renewal.classList.add("hidden");
   estimate.classList.add("hidden");
   upload.classList.add("hidden");
+  if (reports) reports.classList.add("hidden");
+  
   tabRenewal.classList.remove("active");
   tabEstimate.classList.remove("active");
   tabUpload.classList.remove("active");
+  if (tabReports) tabReports.classList.remove("active");
 
   if (tab === "renewal") {
     renewal.classList.remove("hidden");
@@ -33,6 +39,9 @@ function showTab(tab) {
   } else if (tab === "upload") {
     upload.classList.remove("hidden");
     tabUpload.classList.add("active");
+  } else if (tab === "reports") {
+    if (reports) reports.classList.remove("hidden");
+    if (tabReports) tabReports.classList.add("active");
   }
 }
 
@@ -46,6 +55,7 @@ async function loadRenewals(page = 1) {
     renewalPage = page;
 
     renderRenewals();
+    renderRenewalCharts(renewalData);
     renderPagination(
       renewalData.length,
       renewalPage,
@@ -116,7 +126,7 @@ function renderEstimates() {
       ? `
         <div class="doc-actions">
           <a href="${API}/insurance/estimates/${e.id}/document" target="_blank" title="View" style="text-decoration:none; font-size:18px;">👁️</a>
-          <a href="${API}/insurance/estimates/${e.id}/document" download title="Download" style="text-decoration:none; font-size:18px;">⬇️</a>
+          <a href="${API}/insurance/estimates/${e.id}/document?download=true" title="Download" style="text-decoration:none; font-size:18px;">⬇️</a>
         </div>
       `
       : "-";
@@ -127,8 +137,6 @@ function renderEstimates() {
         <td>${e.customer_name}</td>
         <td>${e.vehicle_reg_no}</td>
         <td>${docLink}</td>
-        <td>${e.document_type || "-"}</td>
-        <td>${e.file_size ? (e.file_size / 1024).toFixed(1) + " KB" : "-"}</td>
       </tr>
     `;
   });
@@ -211,7 +219,59 @@ window.loadEstimates = loadEstimates;
 window.downloadTemplate = downloadTemplate;
 window.uploadData = uploadData;
 
-// ---------- PREVIEW MODAL ----------
+// -------------------- CHARTS --------------------
+let renewalTypeChartInst = null;
+let renewalModeChartInst = null;
+let estimateDocTypeChartInst = null;
+
+function normalizeInsuranceString(str) {
+  if (!str) return 'Unknown';
+  let s = String(str).trim();
+  if (!s) return 'Unknown';
+  return s.split(/[\s_]+/).map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
+}
+
+function normalizeAppointmentMode(mode) {
+  if (!mode) return 'Unknown';
+  let m = String(mode).trim().toLowerCase();
+  if (m.includes('online')) return 'Online';
+  if (m.includes('field')) return 'Field Visit';
+  if (m.includes('walk')) return 'Walk-In';
+  return normalizeInsuranceString(mode);
+}
+
+function renderRenewalCharts(data) {
+  if (!data || data.length === 0) return;
+
+  const typeCount = {};
+  const modeCount = {};
+
+  data.forEach(r => {
+    const type = normalizeInsuranceString(r.renewal_type);
+    typeCount[type] = (typeCount[type] || 0) + 1;
+
+    const mode = normalizeAppointmentMode(r.appointment_mode);
+    modeCount[mode] = (modeCount[mode] || 0) + 1;
+  });
+
+  const commonColors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316', '#64748b', '#06b6d4'];
+
+  if (renewalTypeChartInst) renewalTypeChartInst.destroy();
+  renewalTypeChartInst = new Chart(document.getElementById('renewalTypeChart'), {
+    type: 'pie',
+    data: { labels: Object.keys(typeCount), datasets: [{ data: Object.values(typeCount), backgroundColor: commonColors }] },
+    options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+  });
+
+  if (renewalModeChartInst) renewalModeChartInst.destroy();
+  renewalModeChartInst = new Chart(document.getElementById('renewalModeChart'), {
+    type: 'doughnut',
+    data: { labels: Object.keys(modeCount), datasets: [{ data: Object.values(modeCount), backgroundColor: commonColors }] },
+    options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+  });
+}
+
+
 let previewCurrentPage = 1;
 let previewCurrentType = '';
 const PREVIEW_PAGE_SIZE = 10;

@@ -5,18 +5,13 @@ const registerTab = document.getElementById('registerTab');
 
 // ── Helper: show inline message ──────────────────────────────────────────────
 function showMessage(elementId, message, type = 'error') {
-  const el = document.getElementById(elementId);
-  if (!el) return;
-  el.textContent = message;
-  el.className = `form-message ${type}`;
-  el.classList.remove('hidden');
+  if (window.showToast) {
+    window.showToast(message, type);
+  }
 }
 
 function clearMessage(elementId) {
-  const el = document.getElementById(elementId);
-  if (!el) return;
-  el.textContent = '';
-  el.className = 'form-message hidden';
+  // Toasts auto dismiss, nothing needed here
 }
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -63,7 +58,10 @@ loginForm.addEventListener('submit', async function(event) {
     if (response.ok) {
       localStorage.setItem('isLoggedIn', 'true');
       localStorage.setItem('userEmail', email);
-      window.location.href = 'index.html';
+      showMessage('loginError', 'Login successful! Redirecting to dashboard...', 'success');
+      setTimeout(() => {
+        window.location.href = 'index.html';
+      }, 1200);
     } else {
       const error = await response.json();
       showMessage('loginError', error.detail || 'Login failed. Please check your credentials.');
