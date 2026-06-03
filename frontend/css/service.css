@@ -376,3 +376,100 @@
   display: none !important;
 }
 @media (max-width: 768px) { .service-actions-flex { flex-direction: column; align-items: stretch; } .filter-tabs { justify-content: center; } .service-report-card-group { grid-template-columns: 1fr; } .report-card-values { grid-template-columns: 1fr; } .date-range-row { flex-direction: column; align-items: stretch; } .range-selector { flex-wrap: wrap; justify-content: center; border-radius: 20px; } .range-pill { flex: 1; min-width: 100px; justify-content: center; } }
+
+/* Service Images Gallery Style */
+.service-images-gallery {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.service-image-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.service-image-link {
+  display: inline-block;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #cbd5e1;
+  transition: all 0.2s ease;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+}
+
+.service-image-link:hover {
+  transform: scale(1.1);
+  border-color: #3b82f6;
+  box-shadow: 0 4px 10px rgba(59, 130, 246, 0.25);
+}
+
+.service-image-thumbnail {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* circular view/download buttons style matching user design */
+.service-image-row .doc-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.service-image-row .doc-actions a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  font-size: 14px;
+  text-decoration: none;
+  color: #3b82f6;
+  background: #eff6ff; /* light blue fill */
+  border: 1px solid #bfdbfe; /* thin light blue border */
+  transition: all 0.2s ease;
+}
+
+.service-image-row .doc-actions a:hover {
+  background: #3b82f6;
+  color: white;
+  border-color: transparent;
+  box-shadow: 0 6px 12px rgba(59, 130, 246, 0.35);
+  transform: translateY(-1.5px);
+}
+
+.service-image-row .doc-actions a .icon {
+  font-size: 14px;
+  line-height: 1;
+}
+
+/* Compact view gallery button style */
+.view-gallery-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #eff6ff; /* light blue background */
+  border: 1.5px solid #bfdbfe;
+  color: #2563eb;
+  padding: 8px 16px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+.view-gallery-btn:hover {
+  background: #2563eb;
+  color: white;
+  border-color: transparent;
+  box-shadow: 0 8px 16px rgba(37, 99, 235, 0.25);
+  transform: translateY(-1.5px);
+}

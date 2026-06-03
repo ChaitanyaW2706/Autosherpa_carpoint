@@ -4,7 +4,7 @@ from db import get_db
 from datetime import datetime, timezone, timedelta
 from typing import Optional
 import pandas as pd
-import io
+import io,json
 
 IST = timezone(timedelta(hours=5, minutes=30))
 
@@ -40,6 +40,29 @@ FORECAST_COLUMNS = [
     "modelcat", "dnd_1", "customer_id", "Negative_Disposition_ID", "pincode",
     "ifccount", "ipccount", "tenure_servicetype", "mileage_servicetype"
 ]
+
+
+def _parse_images(image_str: Optional[str]) -> list[str]:
+    if not image_str:
+        return []
+    image_str = image_str.strip()
+    if not image_str or image_str in ("0", "1"):
+        return []
+    
+    # Try parsing as JSON array
+    if image_str.startswith("["):
+        try:
+            paths = json.loads(image_str)
+            if isinstance(paths, list):
+                return [p for p in paths if p]
+        except Exception:
+            pass
+
+    # Try comma separation
+    if "," in image_str:
+        return [p.strip() for p in image_str.split(",") if p.strip()]
+        
+    return [image_str]
 
 
 def _to_iso(value):
@@ -86,6 +109,7 @@ def _fmt_service_item(row: dict, source: str) -> dict:
         "model": row.get("model") or row.get("cur_model") or "-",
         "item_type": item_type,
         "created_at": _to_iso(row.get("created_at") or row.get("booking_timestamp") or row.get("request_timestamp")),
+        "images": _parse_images(row.get("image_uploaded")),
     }
 
 
@@ -140,7 +164,7 @@ def get_service_action_items(
     table_queries = [
         (
             "Service Estimate",
-            f"SELECT id, phone_number, vehicle_reg, estimate_type, status, request_timestamp AS created_at, estimated_cost FROM service_estimate_requests{date_filter.replace('created_at', 'request_timestamp')} ORDER BY request_timestamp DESC LIMIT %s",
+            f"SELECT id, phone_number, vehicle_reg, estimate_type, status, request_timestamp AS created_at, estimated_cost, image_uploaded FROM service_estimate_requests{date_filter.replace('created_at', 'request_timestamp')} ORDER BY request_timestamp DESC LIMIT %s",
         ),
         (
             "Service Appointment",
@@ -218,7 +242,7 @@ def export_service_records(
     all_queries = [
         (
             "Service Estimate",
-            f"SELECT id, phone_number, vehicle_reg, estimate_type, status, request_timestamp AS created_at, estimated_cost FROM service_estimate_requests{date_filter.replace('created_at', 'request_timestamp')} ORDER BY request_timestamp DESC LIMIT %s",
+            f"SELECT id, phone_number, vehicle_reg, estimate_type, status, request_timestamp AS created_at, estimated_cost, image_uploaded FROM service_estimate_requests{date_filter.replace('created_at', 'request_timestamp')} ORDER BY request_timestamp DESC LIMIT %s",
         ),
         (
             "Service Appointment",
@@ -253,6 +277,123 @@ def export_service_records(
     return StreamingResponse(
         output,
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'}
+    )
+
+
+@router.get("/estimates/image")
+def view_or_download_service_image(path: str, download: bool = False):
+    import os
+    from fastapi.responses import FileResponse
+    
+    # 1. Fetch the absolute file path directly from MySQL database uploaded_images table
+    db = get_db()
+    cur = db.cursor(dictionary=True)
+    try:
+        clean_path = path.replace("uploads/", "", 1) if path.startswith("uploads/") else path
+        cur.execute(
+            "SELECT file_path FROM uploaded_images WHERE relative_path = %s OR relative_path = %s",
+            (path, f"uploads/{clean_path}")
+        )
+        row = cur.fetchone()
+    finally:
+        cur.close()
+        db.close()
+        
+    if not row or not row.get("file_path"):
+        raise HTTPException(status_code=404, detail="Image record not found in database")
+        
+    safe_path = row["file_path"]
+    
+    # 2. Check if the file exists on the filesystem
+    if not os.path.exists(safe_path) or not os.path.isfile(safe_path):
+        raise HTTPException(status_code=404, detail="File not found on disk")
+        
+    filename = os.path.basename(safe_path)
+    content_type = "image/jpeg"
+    if filename.lower().endswith(".png"):
+        content_type = "image/png"
+    elif filename.lower().endswith(".gif"):
+        content_type = "image/gif"
+        
+    headers = {}
+    if download:
+        headers["Content-Disposition"] = f'attachment; filename="{filename}"'
+    else:
+        headers["Content-Disposition"] = f'inline; filename="{filename}"'
+        
+    return FileResponse(safe_path, media_type=content_type, headers=headers)
+
+
+@router.get("/estimates/{request_id}/download-zip")
+def download_all_service_images_zip(request_id: int):
+    import os
+    import zipfile
+    from db import get_db
+    
+    # 1. Fetch estimate request image_uploaded
+    db = get_db()
+    cur = db.cursor(dictionary=True)
+    try:
+        cur.execute(
+            "SELECT image_uploaded, vehicle_reg FROM service_estimate_requests WHERE id = %s",
+            (request_id,)
+        )
+        row = cur.fetchone()
+    finally:
+        cur.close()
+        db.close()
+        
+    if not row:
+        raise HTTPException(status_code=404, detail="Service estimate request not found")
+        
+    images = _parse_images(row.get("image_uploaded"))
+    if not images:
+        raise HTTPException(status_code=400, detail="No images uploaded for this request")
+        
+    # 2. Resolve absolute file paths from uploaded_images table
+    db = get_db()
+    cur = db.cursor(dictionary=True)
+    file_paths = []
+    try:
+        for img in images:
+            clean_path = img.replace("uploads/", "", 1) if img.startswith("uploads/") else img
+            cur.execute(
+                "SELECT file_path, original_filename FROM uploaded_images WHERE relative_path = %s OR relative_path = %s",
+                (img, f"uploads/{clean_path}")
+            )
+            img_row = cur.fetchone()
+            if img_row and img_row.get("file_path"):
+                file_paths.append((img_row["file_path"], img_row.get("original_filename") or os.path.basename(img_row["file_path"])))
+    finally:
+        cur.close()
+        db.close()
+        
+    if not file_paths:
+        raise HTTPException(status_code=404, detail="No matching image files found in database")
+        
+    # 3. Create zip file in memory
+    zip_buffer = io.BytesIO()
+    with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
+        for fpath, orig_name in file_paths:
+            if os.path.exists(fpath) and os.path.isfile(fpath):
+                # Avoid duplicate names in zip
+                arcname = orig_name
+                counter = 1
+                while arcname in zip_file.namelist():
+                    base, ext = os.path.splitext(orig_name)
+                    arcname = f"{base}_{counter}{ext}"
+                    counter += 1
+                zip_file.write(fpath, arcname)
+                
+    zip_buffer.seek(0)
+    
+    vehicle_reg = row.get("vehicle_reg") or f"request_{request_id}"
+    filename = f"service_images_{vehicle_reg}_{request_id}.zip"
+    
+    return StreamingResponse(
+        zip_buffer,
+        media_type="application/zip",
         headers={"Content-Disposition": f'attachment; filename="{filename}"'}
     )
 

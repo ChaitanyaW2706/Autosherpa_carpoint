@@ -260,6 +260,7 @@ function updateTableHeaders(items) {
     headerHtml += `
       <th>Vehicle Number</th>
       <th>Mobile Number</th>
+      <th>Uploaded Images</th>
       <th>Type of Service</th>
       <th>Schedule</th>
     `;
@@ -292,7 +293,7 @@ function renderServiceRows(items) {
   const hasEstimates = items.some(item => item.source === "Service Estimate");
   const hasAppointments = items.some(item => item.source === "Service Appointment");
   const isEstimateOnly = hasEstimates && !hasAppointments;
-  const colSpan = isEstimateOnly ? 4 : 5;
+  const colSpan = isEstimateOnly ? 5 : 5;
 
   if (!items.length) {
     tbody.innerHTML = `<tr><td colspan="${colSpan}" class="empty-state">No service records found.</td></tr>`;
@@ -304,10 +305,20 @@ function renderServiceRows(items) {
   tbody.innerHTML = items.map((item) => {
     if (isEstimateOnly) {
       // Service Estimate layout
+      let imagesHtml = "-";
+      if (item.images && item.images.length > 0) {
+        const escapedImages = escapeHtml(JSON.stringify(item.images));
+        imagesHtml = `
+          <button class="view-gallery-btn" data-images="${escapedImages}" onclick="openServiceImagesLightbox(JSON.parse(this.getAttribute('data-images')), ${item.id})">
+            📷 View Images (${item.images.length})
+          </button>
+        `;
+      }
       return `
         <tr>
           <td><span class="vehicle-number">${escapeHtml(item.vehicle_reg)}</span></td>
           <td><span class="mobile-number">${escapeHtml(item.phone)}</span></td>
+          <td>${imagesHtml}</td>
           <td><span class="item-type-label">${escapeHtml(item.estimate_type)}</span></td>
           <td>${formatSchedule(item.created_at, "")}</td>
         </tr>
@@ -689,9 +700,97 @@ function renderServicePreviewPagination(totalPages, currentPage, type) {
 }
 
 // Close modal when clicking outside
-document.getElementById('servicePreviewModal').addEventListener('click', function(e) {
-  if (e.target === this) closeServicePreview();
-});
+const servicePreviewModal = document.getElementById('servicePreviewModal');
+if (servicePreviewModal) {
+  servicePreviewModal.addEventListener('click', function(e) {
+    if (e.target === this) closeServicePreview();
+  });
+}
+
 
 window.openServicePreviewByType = openServicePreviewByType;
 window.closeServicePreview = closeServicePreview;
+
+
+// ================= SERVICE IMAGES LIGHTBOX GALLERY CAROUSEL =================
+let activeLightboxImages = [];
+let activeLightboxIndex = 0;
+let activeLightboxRequestId = null;
+
+function openServiceImagesLightbox(images, requestId) {
+  activeLightboxImages = images;
+  activeLightboxIndex = 0;
+  activeLightboxRequestId = requestId;
+  
+  const modal = document.getElementById("serviceImagesModal");
+  if (!modal) return;
+  
+  modal.style.display = "flex";
+  document.body.style.overflow = "hidden";
+  
+  updateLightboxImage();
+}
+
+function closeServiceImagesModal() {
+  const modal = document.getElementById("serviceImagesModal");
+  if (modal) {
+    modal.style.display = "none";
+  }
+  document.body.style.overflow = "";
+}
+
+function updateLightboxImage() {
+  if (activeLightboxImages.length === 0) return;
+  
+  const img = activeLightboxImages[activeLightboxIndex];
+  const viewUrl = `${API}/service/estimates/image?path=${encodeURIComponent(img)}`;
+  const downloadUrl = `${API}/service/estimates/image?path=${encodeURIComponent(img)}&download=true`;
+  const thumbUrl = (img.startsWith('http') || img.startsWith('/')) ? img : `${API}/${img}`;
+  
+  document.getElementById("lightboxActiveImage").src = thumbUrl;
+  document.getElementById("lightboxViewBtn").href = viewUrl;
+  document.getElementById("lightboxDownloadBtn").href = downloadUrl;
+  
+  // Set ZIP download link and show/hide
+  const downloadAllBtn = document.getElementById("lightboxDownloadAllBtn");
+  if (downloadAllBtn) {
+    if (activeLightboxImages.length > 1 && activeLightboxRequestId) {
+      downloadAllBtn.href = `${API}/service/estimates/${activeLightboxRequestId}/download-zip`;
+      downloadAllBtn.style.display = "flex";
+    } else {
+      downloadAllBtn.style.display = "none";
+    }
+  }
+  
+  document.getElementById("lightboxImageIndex").textContent = `Image ${activeLightboxIndex + 1} of ${activeLightboxImages.length}`;
+  
+  // Show or hide arrows based on image count
+  document.getElementById("lightboxPrevBtn").style.display = activeLightboxImages.length > 1 ? "flex" : "none";
+  document.getElementById("lightboxNextBtn").style.display = activeLightboxImages.length > 1 ? "flex" : "none";
+}
+
+function prevLightboxImage() {
+  if (activeLightboxImages.length <= 1) return;
+  activeLightboxIndex = (activeLightboxIndex - 1 + activeLightboxImages.length) % activeLightboxImages.length;
+  updateLightboxImage();
+}
+
+function nextLightboxImage() {
+  if (activeLightboxImages.length <= 1) return;
+  activeLightboxIndex = (activeLightboxIndex + 1) % activeLightboxImages.length;
+  updateLightboxImage();
+}
+
+// Close modal when clicking outside wrapper
+const serviceImagesModal = document.getElementById('serviceImagesModal');
+if (serviceImagesModal) {
+  serviceImagesModal.addEventListener('click', function(e) {
+    if (e.target === this) closeServiceImagesModal();
+  });
+}
+
+
+window.openServiceImagesLightbox = openServiceImagesLightbox;
+window.closeServiceImagesModal = closeServiceImagesModal;
+window.prevLightboxImage = prevLightboxImage;
+window.nextLightboxImage = nextLightboxImage;

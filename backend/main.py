@@ -37,6 +37,13 @@ app.include_router(aboutus_router,   prefix="/aboutus",   tags=["AboutUs"])
 app.include_router(refinancing_router, prefix="/refinancing", tags=["Refinancing"])
 app.include_router(auth_router,     prefix="/auth",     tags=["Auth"])
 
+from fastapi.staticfiles import StaticFiles
+from db import get_uploads_dir
+
+# Mount uploads directory dynamically to serve images uploaded by customers
+uploads_dir = get_uploads_dir()
+app.mount("/uploads", StaticFiles(directory=uploads_dir), name="uploads")
+
 # Create MySQL table on startup
 @app.on_event("startup")
 def on_startup():
